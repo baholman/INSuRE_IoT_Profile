@@ -35,8 +35,8 @@ class WlanPcapFileParser:
             #get packet info
             for packet in getPackets(pcap_text):
                 packet_dict = {}
-                packet_dict['header'] = getHeader(packet)
-                packet_dict['body'] = getBody(packet)
+                packet_dict['header'] = __getHeader(packet)
+                packet_dict['body'] = __getBody(packet)
                 file_dict['packets'].append(packet_dict)
 
             result.append(file_dict)
