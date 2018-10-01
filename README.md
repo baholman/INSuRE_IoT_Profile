@@ -1,5 +1,7 @@
 # INSuRE_IoT_Profile
 
+Using Python 3.6.5 for development
+
 ## Project Structure Notes:
 For this project, we will be using a set of PCAP files contained in a folder that is called pcap_files at the root level of this repo. We are going to ignore this folder from the repo to keep the data for these files private. Add your PCAP flies to a directory named the same thing at the root level of the repo to match our structure.
 
