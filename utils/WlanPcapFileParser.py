@@ -17,26 +17,27 @@ class WlanPcapFileParser:
 
     Return: An array of dictionaries that contain file content
     """
-    def getJson(pcap_dir):
+    def getJson(self, pcap_dir):
         result = []
         
-        for file_path in os.listdir(pcap_dir):
+        for file_name in os.listdir(pcap_dir):
             #Initalize file dictionary
             file_dict = {}
-            file_dict['file_path'] = file_path
+            file_dict['file_path'] = file_name
             file_dict['protocol'] = 'WLAN'
             file_dict['identifiers'] = ['source_ip']
             file_dict['packets'] = []
 
             #get file contents
-            input_file = open(file_path,'r')
-            pcap_text = __parseBinary(input_file)
+            input_path = os.path.join(pcap_dir, file_name);
+            input_file = open(input_path,'r')
+            pcap_text = self.__parseBinary(input_file)
 
             #get packet info
-            for packet in getPackets(pcap_text):
+            for packet in self.__getPackets(pcap_text):
                 packet_dict = {}
-                packet_dict['header'] = __getHeader(packet)
-                packet_dict['body'] = __getBody(packet)
+                packet_dict['header'] = self.__getHeader(packet)
+                packet_dict['body'] = self.__getBody(packet)
                 file_dict['packets'].append(packet_dict)
 
             result.append(file_dict)
@@ -54,7 +55,7 @@ class WlanPcapFileParser:
 
     Return: string of the PCAP file
     """
-    def __parseBinary(input_file):
+    def __parseBinary(self, input_file):
         return ''
 
 
@@ -68,7 +69,7 @@ class WlanPcapFileParser:
 
     Return: array of the string contents of a packet
     """
-    def __getPackets(pcap_string):
+    def __getPackets(self, pcap_string):
         return []
 
 
@@ -82,7 +83,7 @@ class WlanPcapFileParser:
 
     Return: Dictionary of header fields
     """
-    def __getHeader(packet_string):
+    def __getHeader(self, packet_string):
         return {}
 
 
@@ -96,6 +97,6 @@ class WlanPcapFileParser:
 
     Return: Dictionary of body contents
     """
-    def __getBody(packet_string):
+    def __getBody(self, packet_string):
         return {}
     

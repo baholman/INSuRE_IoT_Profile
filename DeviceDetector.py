@@ -1,7 +1,9 @@
 #!/bin/python
 
 import os
-from utils import WlanPcapFileParser
+from utils.WlanPcapFileParser import WlanPcapFileParser
 
 parser = WlanPcapFileParser()
-print(parser.getJson(os.getcwd() + '/pcap_files/'))
+
+file_path = os.path.join(os.getcwd(), 'pcap_files')
+print(parser.getJson(file_path))
