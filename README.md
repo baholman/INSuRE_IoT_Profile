@@ -1,6 +1,9 @@
 # INSuRE_IoT_Profile
 
-Parsing PCAP file:
+## Project Structure Notes:
+For this project, we will be using a set of PCAP files contained in a folder that is called pcap_files at the root level of this repo. We are going to ignore this folder from the repo to keep the data for these files private. Add your PCAP flies to a directory named the same thing at the root level of the repo to match our structure.
+
+## Parsing PCAP file:
 
 Given: A directory of PCAP files
 
@@ -22,7 +25,7 @@ Format of output JSON:
   etc
 }
 
-Separating PCAP file into device specific files:
+## Separating PCAP file into device specific files:
 
 Given: A directory of JSON format of PCAP files
 
@@ -45,4 +48,4 @@ Format of output JSON:
   etc
 }
 
-Machine learning:
+## Machine learning:
