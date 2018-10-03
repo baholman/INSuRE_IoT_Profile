@@ -1,0 +1,1 @@
+{"identifiers": {"source_ip": "123.456.789.0", "destination_ip": "980.123.345.675"}, "packets": [{"header": {"source_ip": "123.456.789.0", "destination_ip": "980.123.345.675", "extra": "text"}, "body": {"blah": "de blah"}}, {"header": {"source_ip": "123.456.789.0", "destination_ip": "980.123.345.675", "extra": "text"}, "body": {"blah": "de blah"}}]}

@@ -1,5 +1,8 @@
 #!/bin/python
 
+import os
+import json
+
 """
 Device File Creator
 
@@ -32,30 +35,44 @@ class DeviceFileCreator:
 		devices = []
 
 		for file_dict in input_data:
-			# Get necessary info about file
+			# Get the file path from the file
+			if 'file_path' not in file_dict.keys():
+				print('ERROR: File path was not provided for file')
+				continue
+			
 			file_path = file_dict['file_path']
+
+			# Get identifiers from the file
+			if 'identifiers' not in file_dict.keys():
+				print('ERROR: File path was not provided for file')
+				continue
+			
 			identifiers = file_dict['identifiers']
 
 			# Handle no identifiers being provided
 			if len(identifiers) < 1:
-				print("ERROR: No identifiers were provided to label the packets in the file")
+				print('ERROR: No identifiers were provided to label the packets in the file')
 				continue
 
 			# Get packets from file
+			if 'packets' not in file_dict.keys():
+				print('ERROR: Packets array was not defined for the file')
+				continue
+
 			for packet in file_dict['packets']:
 				packet_identifiers = self.__getPacketIdentifierValues(packet, identifiers)
 
 				# Check if a device for the specific set of identifers for the packet exists
 				device_matches = 0
 				for device in devices:
-					identifiers_match = self.__isIdentifiersMatch(identifiers, device[identifiers], packet_identifiers)
+					identifiers_match = self.__isIdentifiersMatch(identifiers, device['identifiers'], packet_identifiers)
 					# Handle the first packet to device match
 					if identifiers_match and device_matches == 0:
-						device['packets'] = packet
+						device['packets'].append(packet)
 						device_matches += 1
 					# Handle subsequent packet to device matches
 					elif identifiers_match and device_matches > 0:
-						print("ERROR: The packet identifiers are not specific enough to uniquely identify devices")
+						print('ERROR: The packet identifiers are not specific enough to uniquely identify devices')
 						error(-1)
 
 				# Handle if the device doesn't match any existing device
@@ -81,8 +98,8 @@ class DeviceFileCreator:
 		match = True
 		for identifier in identifiers:
 			# Check if the device identifier matches the packet identifier
-			if device_identifiers[idenifier] != packet_identifiers[identifier]:
-				device_matches = False
+			if device_identifiers[identifier] != packet_identifiers[identifier]:
+				match = False
 
 		return match
 
@@ -97,7 +114,7 @@ class DeviceFileCreator:
 	"""
 	def __createNewDevice(self, device_identifiers, packet):
 		device_dict = {}
-		device_dict['identifiers'] = packet_identifiers
+		device_dict['identifiers'] = device_identifiers
 		device_dict['packets'] = []
 		device_dict['packets'].append(packet)
 		return device_dict
@@ -117,15 +134,15 @@ class DeviceFileCreator:
 		# Go through all the identifiers for the device
 		for identifier in identifiers:
 			# Check if the identifier field is in the header
-			if identifier in packet['header'].keys():
-				packet_identifiers[identifier] = packet['header'][identifier]
+			if identifier in packet_dict['header'].keys():
+				packet_identifiers[identifier] = packet_dict['header'][identifier]
 			# Check if the identifier field is in the body
-			elif identifier in packet['body'].keys():
-				packet_identifiers[identifier] = packet['body'][identifier]
+			elif identifier in packet_dict['body'].keys():
+				packet_identifiers[identifier] = packet_dict['body'][identifier]
 			# Handle the case that the identifier doesn't exist in the packet
 			else:
-				print("ERROR: Could not find identifier " + identifier + " in the packet")
-				packet_identifiers[identifier] = "Unknown"
+				print('ERROR: Could not find identifier ' + identifier + ' in the packet')
+				packet_identifiers[identifier] = 'Unknown'
 
 		return packet_identifiers
 
@@ -140,8 +157,9 @@ class DeviceFileCreator:
 	"""
 	def __outputDeviceFiles(self, device_dict, output_dir):
 		device_index = 0
-		for device in devices:
+		for device in device_dict:
 			# Output dictionary contents to new file as JSON
-			output_path = os.path.join(output_dir, "device_" + str(device_index) + ".json")
-			output_file.open(output_path, "w")
+			output_path = os.path.join(output_dir, 'device_' + str(device_index) + '.json')
+			output_file = open(output_path, 'w')
 			output_file.write(json.dumps(device))
+			device_index += 1
