@@ -1,7 +1,7 @@
 #!/bin/python
 
 import os
-from utils.DeviceFileCreator import DeviceFileCreator
+from utils.DeviceTrafficSorter import DeviceTrafficSorter
 
 def generatePacket(packet_info):
 	packet = {}
@@ -56,6 +56,6 @@ def generateTestDataForDeviceFileCreator():
 
 	return files
 
-sorter = DeviceFileCreator()
+sorter = DeviceTrafficSorter()
 test_data = generateTestDataForDeviceFileCreator()
-sorter.genDeviceFiles(test_data, '/mnt/c/Users/joyha/Documents/Classes/CIS 890/INSuRE_IoT_Profile/tests')
+sorter.genDeviceFiles(test_data, '/mnt/c/Users/joyha/Documents/Classes/CIS890/INSuRE_IoT_Profile/tests')
