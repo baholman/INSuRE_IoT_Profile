@@ -1,6 +1,6 @@
 import os
-import pcapy as p
 from scapy.all import *
+import pcapy as p
 
 """
 WlanPcapFileParser
