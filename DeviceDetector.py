@@ -1,9 +1,13 @@
 #!/bin/python
 
 import os
+import sys
 from utils.WlanPcapFileParser import WlanPcapFileParser
 
-parser = WlanPcapFileParser()
+if len(sys.argv) != 3:
+	print('ERROR: Incorrect number of arguments provided')
+	print('python3 DeviceDetector <pcap_input_directory> <json_output_directory>')
+	error(-1)
 
-file_path = os.path.join(os.getcwd(), 'pcap_files')
-print(parser.getJson(file_path))
+parser = WlanPcapFileParser()
+print(parser.getJson(sys.argv[1]))
