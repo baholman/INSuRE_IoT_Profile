@@ -1,4 +1,6 @@
 import os
+import pcapy as p
+from scapy.all import *
 
 """
 WlanPcapFileParser
@@ -51,12 +53,16 @@ class WlanPcapFileParser:
     Parses binary to text.
 
     Params: 
-    input_file - input file object
+    input_filename - file name of the input file
 
     Return: string of the PCAP file
     """
-    def __parseBinary(self, input_file):
-        return ''
+    def __parseBinary(self, input_filename):
+        pcap_string = ''
+        input_filename_txt = os.path.splitext(input_filename)[0] + '.txt'
+        os.system('tshark  -T fields  -e frame.time -e  data.data -w ' + input_filename + ' > ' + input_filename_txt + ' -F pcap -c 1000')
+        pcap_string = rdpcap(input_filename)
+        return pcap_string
 
 
     """
