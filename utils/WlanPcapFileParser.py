@@ -1,6 +1,6 @@
 import os
-import pcapy as p
 from scapy.all import *
+from scapy import pcapy as p
 
 """
 WlanPcapFileParser
@@ -76,7 +76,8 @@ class WlanPcapFileParser:
     Return: array of the string contents of a packet
     """
     def __getPackets(self, pcap_string):
-        return []
+        result = []
+        return result
 
 
     """
