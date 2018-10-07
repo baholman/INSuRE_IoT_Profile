@@ -20,7 +20,7 @@ class WlanPcapFileParser:
 
     Return: An array of dictionaries that contain file content
     """
-    def getJson(self, pcap_dir):
+    def getJson(self, pcap_dir, json_dir):
         result = []
         
         for file_name in os.listdir(pcap_dir):
@@ -34,7 +34,7 @@ class WlanPcapFileParser:
             #get file contents
             input_path = os.path.join(pcap_dir, file_name);
             input_file = open(input_path,'r')
-            pcap_text = self.__parseBinary(input_path)
+            pcap_text = self.__parseBinary(input_file, pcap_dir, json_dir)
 
             #get packet info
             for packet in self.__getPackets(pcap_text):
@@ -58,13 +58,11 @@ class WlanPcapFileParser:
 
     Return: string of the PCAP file
     """
-    def __parseBinary(self, input_filename):
+    def __parseBinary(self, input_filename, pcap_dir, json_dir):
         pcap_string = ''
-        #input_filename_base = os.path.splitext(os.path.basename(str(input_filename)))[0]
-        #input_filename_txt = input_filename_base + '.txt'
-        #input_filename_pcap = input_filename_base + '.pcap'
-        input_filename_pcap = str(input_filename)
-        input_filename_txt = input_filename_pcap[:-4] +'txt'
+        input_filename_base = os.path.splitext(os.path.basename(str(input_filename)))[0]
+        input_filename_pcap = pcap_dir + input_filename_base + '.pcap'
+        input_filename_txt = json_dir + input_filename_base + '.txt'
         os.system('tshark  -T fields  -e frame.time -e  data.data -w ' + input_filename_pcap + ' > ' + input_filename_txt + ' -F pcap -c 1000')
         pcap_string = rdpcap(input_filename_pcap)
         return pcap_string
