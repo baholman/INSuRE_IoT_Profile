@@ -60,8 +60,10 @@ class WlanPcapFileParser:
     """
     def __parseBinary(self, input_filename):
         pcap_string = ''
-        input_filename_txt = os.path.splitext(input_filename)[0] + '.txt'
-        os.system('tshark  -T fields  -e frame.time -e  data.data -w ' + input_filename + ' > ' + input_filename_txt + ' -F pcap -c 1000')
+        input_filename_base = os.path.splitext(os.path.basename(input_filename))[0]
+        input_filename_txt = input_filename_base + '.txt'
+        input_filename_pcap = input_filename_base + '.pcap'
+        os.system('tshark  -T fields  -e frame.time -e  data.data -w ' + input_filename_pcap + ' > ' + input_filename_txt + ' -F pcap -c 1000')
         pcap_string = rdpcap(input_filename)
         return pcap_string
 
