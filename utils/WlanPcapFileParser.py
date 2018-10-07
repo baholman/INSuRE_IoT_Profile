@@ -86,7 +86,7 @@ class WlanPcapFileParser:
     """
     def __getPackets(self, pcap_string):
         result = []
-        for packet in re.search(r'(\?<= (\"packets\"): )\[\{(.*?)\}\]', pcap_string):
+        for packet in re.findall(r'(\?<= (\"packets\"): )\[\{(.*?)\}\]', pcap_string):
             result.append(packet)
         return result
 
@@ -104,7 +104,7 @@ class WlanPcapFileParser:
     def __getHeader(self, packet_string):
         result = {}
         header_string = re.search(r'(\?<= (\"header\"): )(.*?)\}\])', packet_string)
-        for key_value in re.search(r'(\"(.*?)\":\s\"(.*?)\")', header_string):
+        for key_value in re.findall(r'(\"(.*?)\":\s\"(.*?)\")', header_string):
             key = re.search(r'(\?<= : ).*', key_value)
             value = re.search(r'.*(\?= : )', key_value)
             result[key] = value
@@ -124,7 +124,7 @@ class WlanPcapFileParser:
     def __getBody(self, packet_string):
         result = {}
         body_string = re.search(r'(\?<= (\"body\"): )(.*?)\}\])', packet_string)
-        for key_value in re.search(r'(\"(.*?)\":\s\"(.*?)\")', body_string):
+        for key_value in re.findall(r'(\"(.*?)\":\s\"(.*?)\")', body_string):
             key = re.search(r'(\?<= : ).*', key_value)
             value = re.search(r'.*(\?= : )', key_value)
             result[key] = value
