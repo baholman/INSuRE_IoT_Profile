@@ -116,5 +116,11 @@ class WlanPcapFileParser:
     Return: Dictionary of body contents
     """
     def __getBody(self, packet_string):
-        return {}
+        result = {}
+        body_string = re.search(r'(\?<= (\"body\"): )(.*?)\}\])', packet_string)
+        for key_value in re.search(r'(\"(.*?)\":\s\"(.*?)\")', body_string):
+            key = re.search(r'(\?<= : ).*', key_value)
+            value = re.search(r'.*(\?= : )', key_value)
+            result[key] = value
+        return result
     
