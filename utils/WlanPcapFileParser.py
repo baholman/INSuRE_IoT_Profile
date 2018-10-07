@@ -1,6 +1,6 @@
 import os
+import pcapy as p
 from scapy.all import *
-from scapy import pcapy as p
 import re
 
 """
