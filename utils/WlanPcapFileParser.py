@@ -96,7 +96,13 @@ class WlanPcapFileParser:
     Return: Dictionary of header fields
     """
     def __getHeader(self, packet_string):
-        return {}
+        result = {}
+        header_string = re.search(r'(\?<= (\"header\"): )(.*?)\}\])', packet_string)
+        for key_value in re.search(r'(\"(.*?)\":\s\"(.*?)\")', header_string):
+            key = re.search(r'(\?<= : ).*', key_value)
+            value = re.search(r'.*(\?= : )', key_value)
+            result[key] = value
+        return result
 
 
     """
