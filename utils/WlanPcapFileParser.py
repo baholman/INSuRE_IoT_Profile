@@ -64,7 +64,7 @@ class WlanPcapFileParser:
         #input_filename_txt = input_filename_base + '.txt'
         #input_filename_pcap = input_filename_base + '.pcap'
         input_filename_pcap = str(input_filename)
-        input_filename_txt = input_filename_pcap.replace('.pcap', '.txt')
+        input_filename_txt = input_filename_pcap[:-4] +'txt'
         os.system('tshark  -T fields  -e frame.time -e  data.data -w ' + input_filename_pcap + ' > ' + input_filename_txt + ' -F pcap -c 1000')
         pcap_string = rdpcap(input_filename_pcap)
         return pcap_string
