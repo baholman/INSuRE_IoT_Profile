@@ -1,6 +1,7 @@
 import os
 from scapy.all import *
-import pcapy as p
+from scapy import pcapy as p
+import re
 
 """
 WlanPcapFileParser
@@ -77,6 +78,7 @@ class WlanPcapFileParser:
     """
     def __getPackets(self, pcap_string):
         result = []
+        os.system('tcpdump -n -r')
         return result
 
 
