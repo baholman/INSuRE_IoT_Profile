@@ -78,7 +78,8 @@ class WlanPcapFileParser:
     """
     def __getPackets(self, pcap_string):
         result = []
-        os.system('tcpdump -n -r')
+        for packet in re.split(r'\s([{\[].*?[}\]])$', pcap_string):
+            result.append(packet)
         return result
 
 
