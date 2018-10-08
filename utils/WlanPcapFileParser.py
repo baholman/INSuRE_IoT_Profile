@@ -86,9 +86,10 @@ class WlanPcapFileParser:
     """
     def __getPackets(self, pcap_string):
         result = []
-        #for packet in re.findall(r'(\?<= (\"packets\"): )\[\{(.*?)\}\]', pcap_string):
+        packets = re.search(r'(\?<= (\"packets\"): )\[\{(.*?)\}\}\}', pcap_string)
+        #for packet in re.findallr'(\?<= (\"packets\"): )\[\{(.*?)\}\}\}', pcap_string):
         #    result.append(packet)
-        return re.findall(str(r'(\?<= (\"packets\"): )\[\{(.*?)\}\]'), pcap_string)
+        return re.findall(r'\{(.*?)\}', packets)
 
 
     """
