@@ -85,58 +85,58 @@ class WlanPcapFileParser:
 		result = {}
 		# Get the ethernet information from the packet
 		if packet.haslayer(Ether):
-			print('Ethernet Source MAC Field: ' + str(packet[Ether].src))
-			print('Ethernet Destination MAC Field: ' + str(packet[Ether].dst))
-			print('Ethernet Type: ' + str(packet[Ether].type))
+			result['Ethernet_Source_MAC_Field'] = str(packet[Ether].src)
+			result['Ethernet_Destination_MAC_Field'] = str(packet[Ether].dst)
+			result['Ethernet_Type_Num'] = str(packet[Ether].type)
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
-			print('IP Source: ' + str(packet[IP].src))
-			print('IP Destination: ' + str(packet[IP].dst))
-			print('IP Fragment Offset: ' + str(packet[IP].frag))
-			print('IP Protocol: ' + str(packet[IP].proto))
-			print('IP Type Of Service (aka DSCP): ' + str(packet[IP].tos))
-			print('IP Header Checksum: ' + str(packet[IP].chksum))
-			print('IP Total Length: ' + str(packet[IP].len))
-			print('IP Options: ' + str(packet[IP].options))
-			print('IP Version: ' + str(packet[IP].version))
-			print('IP Flags: ' + str(packet[IP].flags))
-			print('IP Internet Header Length: ' + str(packet[IP].ihl))
-			print('IP Time to Live: ' + str(packet[IP].ttl))
-			print('IP Identification: ' + str(packet[IP].id))
+			result['IP_Source'] = str(packet[IP].src)
+			result['IP_Destination'] = str(packet[IP].dst)
+			result['IP_Fragment_Offset'] = str(packet[IP].frag)
+			result['IP_Protocol'] = str(packet[IP].proto)
+			result['IP_Type_Of_Service_(aka_DSCP)'] = str(packet[IP].tos)
+			result['IP_Header_Checksum'] = str(packet[IP].chksum)
+			result['IP_Total_Length'] = str(packet[IP].len)
+			result['IP_Options'] = str(packet[IP].options)
+			result['IP_Version'] = str(packet[IP].version)
+			result['IP_Flags'] = str(packet[IP].flags)
+			result['IP_Internet_Header_Length'] = str(packet[IP].ihl)
+			result['IP_Time_to_Live'] = str(packet[IP].ttl)
+			result['IP_Identification'] = str(packet[IP].id)
 		# Get the TCP information from the packet
 		if packet.haslayer(TCP):
-			print('TCP Source Port: ' + str(packet[TCP].sport))
-			print('TCP Destination Port: ' + str(packet[TCP].dport))
-			print('TCP Sequence Number: ' + str(packet[TCP].seq))
-			print('TCP Acknowledge Number: ' + str(packet[TCP].ack))
-			print('TCP Data Offset: ' + str(packet[TCP].dataofs))
-			print('TCP Reserved Data: ' + str(packet[TCP].reserved))
-			print('TCP Control Flags: ' + str(packet[TCP].flags))
-			print('TCP Window Size: ' + str(packet[TCP].window))
-			print('TCP Checksum: ' + str(packet[TCP].chksum))
-			print('TCP Urgent Pointer: ' + str(packet[TCP].urgptr))
-			print('TCP Options: ' + str(packet[TCP].options))
+			result['TCP_Source_Port'] =  str(packet[TCP].sport)
+			result['TCP_Destination_Port'] = str(packet[TCP].dport)
+			result['TCP_Sequence_Number'] = str(packet[TCP].seq)
+			result['TCP_Acknowledge_Number'] = str(packet[TCP].ack)
+			result['TCP_Data_Offset'] = str(packet[TCP].dataofs)
+			result['TCP_Reserved_Data'] = str(packet[TCP].reserved)
+			result['TCP_Control_Flags'] = str(packet[TCP].flags)
+			result['TCP_Window_Size'] = str(packet[TCP].window)
+			result['TCP_Checksum'] = str(packet[TCP].chksum)
+			result['TCP_Urgent_Pointer'] = str(packet[TCP].urgptr)
+			result['TCP_Options'] = str(packet[TCP].options)
 		# Get the UDP information from the packet
 		if packet.haslayer(UDP):
-			print('UDP Source Port: ' + str(packet[UDP].sport))
-			print('UDP Destination Port: ' + str(packet[UDP].dport))
-			print('UDP Length: ' + str(packet[UDP].len))
-			print('UDP Checksum: ' + str(packet[UDP].chksum))
+			result['UDP_Source_Port'] = str(packet[UDP].sport)
+			result['UDP_Destination_Port'] = str(packet[UDP].dport)
+			result['UDP_Length'] = str(packet[UDP].len)
+			result['UDP_Checksum'] = str(packet[UDP].chksum)
 		# Get the IP information from the packet
 		if packet.haslayer(ICMP):
-			print('ICMP Gate Way: ' + str(packet[ICMP].gw))
-			print('ICMP Code: ' + str(packet[ICMP].code))
-			print('ICMP Originate Timestamp: ' + str(packet[ICMP].ts_ori))
-			print('ICMP Address Mask: ' + str(packet[ICMP].addr_mask))
-			print('ICMP Sequence: ' + str(packet[ICMP].seq))
-			print('ICMP Pointer: ' + str(packet[ICMP].ptr))
-			print('ICMP Unused: ' + str(packet[ICMP].unused))
-			print('ICMP Receive Timestamp: ' + str(packet[ICMP].ts_rx))
-			print('ICMP Checksum: ' + str(packet[ICMP].chksum))
-			print('ICMP Reserved: ' + str(packet[ICMP].reserved))
-			print('ICMP Transmit Timestamp: ' + str(packet[ICMP].ts_tx))
-			print('ICMP Type: ' + str(packet[ICMP].type))
-			print('ICMP Identifier: ' + str(packet[ICMP].id))
+			result['ICMP_Gate_Way'] = str(packet[ICMP].gw)
+			result['ICMP_Code'] = str(packet[ICMP].code)
+			result['ICMP_Originate_Timestamp'] = str(packet[ICMP].ts_ori)
+			result['ICMP_Address_Mask'] = str(packet[ICMP].addr_mask)
+			result['ICMP_Sequence'] = str(packet[ICMP].seq)
+			result['ICMP_Pointer'] = str(packet[ICMP].ptr)
+			result['ICMP_Unused'] = str(packet[ICMP].unused)
+			result['ICMP_Receive_Timestamp'] = str(packet[ICMP].ts_rx)
+			result['ICMP_Checksum'] = str(packet[ICMP].chksum)
+			result['ICMP_Reserved'] = str(packet[ICMP].reserved)
+			result['ICMP_Transmit_Timestamp'] = str(packet[ICMP].ts_tx)
+			result['ICMP_Type'] = str(packet[ICMP].type)
+			result['ICMP_Identifier'] = str(packet[ICMP].id)
 
 		return result
 
@@ -154,6 +154,75 @@ class WlanPcapFileParser:
 		result = {}
 		
 		if packet.haslayer(Raw):
-			print('Raw: ' + str(packet[Raw].load))
+			result['body'] = str(packet[Raw].load)
 		
 		return result
+
+	"""
+	get Ethernet Type String
+
+	Params:
+	packetNumber - the packet[Ether].type which is a number based on
+	               the ethernet type
+	
+	Return: A string of the ethernet type based on its type number
+	"""
+	def __getEthernetTypeString(self, packetNumber):
+		switch = {
+			0x0800 : 'Internet Protocol version 4 (IPv4)',
+			0x0806 : 'Address Resolution Protocol (ARP)',
+			0x0842 : 'Wake-on-LAN[9]',
+			0x22F3 : 'IETF TRILL Protocol',
+			0x22EA : 'Stream Reservation Protocol',
+			0x6003 : 'DECnet Phase IV',
+			0x8035 : 'Reverse Address Resolution Protocol',
+			0x809B : 'AppleTalk (Ethertalk)',
+			0x80F3 : 'AppleTalk Address Resolution Protocol (AARP)',
+			0x8100 : 'VLAN-tagged frame (IEEE 802.1Q) and Shortest Path Bridging IEEE 802.1aq with NNI compatibility[10]',
+			0x8137 : 'IPX',
+			0x8204 : 'QNX Qnet',
+			0x86DD : 'Internet Protocol Version 6 (IPv6)',
+			0x8808 : 'Ethernet flow control',
+			0x8809 : 'Ethernet Slow Protocols[11] such as the Link Aggregation Control Protocol',
+			0x8819 : 'CobraNet',
+			0x8847 : 'MPLS unicast',
+			0x8848 : 'MPLS multicast',
+			0x8863 : 'PPPoE Discovery Stage',
+			0x8864 : 'PPPoE Session Stage',
+			0x886D : 'Intel Advanced Networking Services [12]',
+			0x8870 : 'Jumbo Frames (Obsoleted draft-ietf-isis-ext-eth-01)',
+			0x887B : 'HomePlug 1.0 MME',
+			0x888E : 'EAP over LAN (IEEE 802.1X)',
+			0x8892 : 'PROFINET Protocol',
+			0x889A : 'HyperSCSI (SCSI over Ethernet)',
+			0x88A2 : 'ATA over Ethernet',
+			0x88A4 : 'EtherCAT Protocol',
+			0x88A8 : 'Provider Bridging (IEEE 802.1ad) & Shortest Path Bridging IEEE 802.1aq[10]',
+			0x88AB : 'Ethernet Powerlink[citation needed]',
+			0x88B8 : 'GOOSE (Generic Object Oriented Substation event)',
+			0x88B9 : 'GSE (Generic Substation Events) Management Services',
+			0x88BA : 'SV (Sampled Value Transmission)',
+			0x88CC : 'Link Layer Discovery Protocol (LLDP)',
+			0x88CD : 'SERCOS III',
+			0x88DC : 'WSMP, WAVE Short Message Protocol',
+			0x88E1 : 'HomePlug AV MME[citation needed]',
+			0x88E3 : 'Media Redundancy Protocol (IEC62439-2)',
+			0x88E5 : 'MAC security (IEEE 802.1AE)',
+			0x88E7 : 'Provider Backbone Bridges (PBB) (IEEE 802.1ah)',
+			0x88F7 : 'Precision Time Protocol (PTP) over Ethernet (IEEE 1588)',
+			0x88F8 : 'NC-SI',
+			0x88FB : 'Parallel Redundancy Protocol (PRP)',
+			0x8902 : 'IEEE 802.1ag Connectivity Fault Management (CFM) Protocol / ITU-T Recommendation Y.1731 (OAM)',
+			0x8906 : 'Fibre Channel over Ethernet (FCoE)',
+			0x8914 : 'FCoE Initialization Protocol',
+			0x8915 : 'RDMA over Converged Ethernet (RoCE)',
+			0x891D : 'TTEthernet Protocol Control Frame (TTE)',
+			0x892F : 'High-availability Seamless Redundancy (HSR)',
+			0x9000 : 'Ethernet Configuration Testing Protocol[13]',
+			0x9100 : 'VLAN-tagged (IEEE 802.1Q) frame with double tagging'
+		}
+		
+		if packetNumber not in switch.keys():
+			return 'Undefined'
+		return switch[packetNumber]
+
