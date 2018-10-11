@@ -1,6 +1,6 @@
 import os
 import pcapy as p
-from scapy.all import rdpcap, Ether, IP, TCP, UDP, ICMP, Raw
+from scapy.all import rdpcap, Ether, IP, TCP, UDP, ICMP, DNS, Raw
 import re
 
 """
@@ -137,6 +137,21 @@ class WlanPcapFileParser:
 			print('ICMP Transmit Timestamp: ' + str(packet[ICMP].ts_tx))
 			print('ICMP Type: ' + str(packet[ICMP].type))
 			print('ICMP Identifier: ' + str(packet[ICMP].id))
+		if packet.haslayer(DNS):
+			print('DNS ID: ' + str(packet[DNS].id))
+			print('DNS QR: ' + str(packet[DNS].qr))
+			print('DNS Op Code: ' + str(packet[DNS].opcode))
+			print('DNS AA: ' + str(packet[DNS].aa))
+			print('DNS TC: ' + str(packet[DNS].tc))
+			print('DNS RD: ' + str(packet[DNS].rd))
+			print('DNS RA: ' + str(packet[DNS].ra))
+			print('DNS Z: ' + str(packet[DNS].z))
+			print('DNS RCode: ' + str(packet[DNS].rcode))
+			print('DNS QD Count: ' + str(packet[DNS].qdcount))
+			print('DNS ancount: ' + str(packet[DNS].ancount))
+			print('DNS nscount: ' + str(packet[DNS].qd))
+			#print('DNS Q Name: ' + str(packet[DNS].qname))
+			#print('DNS Q Type: ' + str(packet[DNS].qtype))
 
 		return result
 
