@@ -10,4 +10,4 @@ if len(sys.argv) != 3:
 	exit(-1)
 
 parser = WlanPcapFileParser()
-print(parser.getJson(sys.argv[1], sys.argv[2]))
+print(parser.getJson(sys.argv[1]))
