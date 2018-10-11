@@ -1,1 +1,0 @@
-{"identifiers": {"source_ip": "1.1.1.1", "destination_ip": "2.2.2.2"}, "packets": [{"header": {"source_ip": "1.1.1.1", "destination_ip": "2.2.2.2", "extra": "text"}, "body": {"blah": "de blah"}}]}

@@ -28,7 +28,7 @@ class WlanPcapFileParser:
 			file_dict = {}
 			file_dict['file_path'] = file_name
 			file_dict['protocol'] = 'WLAN'
-			file_dict['identifiers'] = ['source_ip']
+			file_dict['identifiers'] = ['Ethernet_Source_MAC_Field']
 			file_dict['packets'] = []
 
 			# Get file contents
