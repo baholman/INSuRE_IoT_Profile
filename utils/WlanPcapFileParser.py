@@ -1,6 +1,6 @@
 import os
 import pcapy as p
-from scapy.all import rdpcap, Ether, IP, TCP, UDP, ICMP, Raw
+from scapy.all import rdpcap, Ether, IP, TCP, UDP, ICMP, DNS, Raw
 import re
 
 """
@@ -28,7 +28,7 @@ class WlanPcapFileParser:
 			file_dict = {}
 			file_dict['file_path'] = file_name
 			file_dict['protocol'] = 'WLAN'
-			file_dict['identifiers'] = ['source_ip']
+			file_dict['identifiers'] = ['Ethernet_Source_MAC_Field']
 			file_dict['packets'] = []
 
 			# Get file contents
@@ -138,6 +138,21 @@ class WlanPcapFileParser:
 			result['ICMP_Transmit_Timestamp'] = str(packet[ICMP].ts_tx)
 			result['ICMP_Type'] = str(packet[ICMP].type)
 			result['ICMP_Identifier'] = str(packet[ICMP].id)
+		if packet.haslayer(DNS):
+			result['DNS_Identifier'] = str(packet[DNS].id)
+			result['DNS_Query_Or_Response'] = str(packet[DNS].qr)
+			result['DNS_Op_Code'] = str(packet[DNS].opcode)
+			result['DNS_Authoritative_Answer'] = str(packet[DNS].aa)
+			result['DNS_TrunCation'] = str(packet[DNS].tc)
+			result['DNS_Recursion_Desired'] = str(packet[DNS].rd)
+			result['DNS_Recursion_Available'] = str(packet[DNS].ra)
+			result['DNS_Z_Reserved'] = str(packet[DNS].z)
+			result['DNS_Response_Code'] = str(packet[DNS].rcode)
+			result['DNS_Question_Count'] = str(packet[DNS].qdcount) # Number of entries in the question section
+			result['DNS_Ancount'] = str(packet[DNS].ancount) # Number of resource records in the answer section
+			result['DNS_Nscount'] = str(packet[DNS].nscount) # Number of name service resource records in the authority record section
+			result['DNS_Arcount'] = str(packet[DNS].arcount) # Number of resource records in the additional record section 
+			result['DNS_Query_Data'] = str(packet[DNS].qd)
 
 		return result
 
