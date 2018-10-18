@@ -177,9 +177,12 @@ class WlanPcapFileParser:
 	"""
 	get Ethernet Type String
 
+	Gets the protocol of the eternet type. It recieves an int baesed on the ethernet type, then it compares it to a hex value. The conversion
+	compares a int value to a hex and pulls out the value at the key location in a dictionary. Otherwise, it returns 'Undifined.'
+	Note - The comparison between packetNumber and the key values (hex) is a direct comparison with no conversions to the same data type.
+
 	Params:
-	packetNumber - the packet[Ether].type which is a number based on
-	               the ethernet type
+	packetNumber - the packet[Ether].type which is a number based on the ethernet type. Thi value is an int.
 	
 	Return: A string of the ethernet type based on its type number
 	"""
