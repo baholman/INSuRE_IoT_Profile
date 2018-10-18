@@ -86,14 +86,14 @@ class WlanPcapFileParser:
 		result = {}
 		# Get the ethernet information from the packet
 		if packet.haslayer(Ether):
-			result['Ethernet_Source_MAC_Field'] = str(packet[Ether].src)
-			result['Ethernet_Destination_MAC_Field'] = str(packet[Ether].dst)
+			result['Ethernet_Source_MAC'] = str(packet[Ether].src)
+			result['Ethernet_Destination_MAC'] = str(packet[Ether].dst)
 			result['Ethernet_Type_Num'] = str(packet[Ether].type)
 			result['Ethernet_Type_Protocol'] = self.__getEthernetTypeString(packet[Ether].type)
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
-			result['IP_Source'] = str(packet[IP].src)
-			result['IP_Destination'] = str(packet[IP].dst)
+			result['IP_Source_Address'] = str(packet[IP].src)
+			result['IP_Destination_Address'] = str(packet[IP].dst)
 			try:
 				result['IP_Destination_Domain'] = socket.gethostbyaddr(str(packet[IP].dst))[0]
 			except:
