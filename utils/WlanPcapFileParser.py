@@ -92,13 +92,9 @@ class WlanPcapFileParser:
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
 			result['IP_Source'] = str(packet[IP].src)
-			try:
-				result['IP_Source_Domain'] = socket.gethostbyaddr(str(packet[IP].src))
-			except:
-				result['IP_Source_Domain'] = ''
 			result['IP_Destination'] = str(packet[IP].dst)
 			try:
-				result['IP_Destination_Domain'] = socket.gethostbyaddr(str(packet[IP].dst))
+				result['IP_Destination_Domain'] = socket.gethostbyaddr(str(packet[IP].dst))[0]
 			except:
 				result['IP_Destination_Domain'] = ''
 			result['IP_Fragment_Offset'] = str(packet[IP].frag)
