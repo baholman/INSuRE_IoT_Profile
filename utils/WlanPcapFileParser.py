@@ -131,6 +131,10 @@ class WlanPcapFileParser:
 		# Get the IP information from the packet
 		if packet.haslayer(ICMP):
 			result['ICMP_Gateway_IP_Address'] = str(packet[ICMP].gw)
+			try:
+				result['ICMP_Gateway_Domain'] = socket.gethostbyaddr(str(packet[ICMP].gw))[0]
+			except:
+				result['ICMP_Gateway_Domain'] = ''
 			result['ICMP_Code'] = str(packet[ICMP].code)
 			result['ICMP_Originate_Timestamp'] = str(packet[ICMP].ts_ori)
 			result['ICMP_Address_Mask'] = str(packet[ICMP].addr_mask)
