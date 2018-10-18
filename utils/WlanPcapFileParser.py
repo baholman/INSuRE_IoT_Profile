@@ -101,7 +101,6 @@ class WlanPcapFileParser:
 			result['IP_Fragment_Offset'] = str(packet[IP].frag)
 			result['IP_Protocol_Num'] = str(packet[IP].proto)
 			result['IP_Protocol_String'] = self.__getIPProtocolString(packet[IP].proto)
-			print(result['IP_Protocol_String'])
 			result['IP_Type_Of_Service_(aka_DSCP)'] = str(packet[IP].tos)
 			result['IP_Header_Checksum'] = str(packet[IP].chksum)
 			result['IP_Total_Length'] = str(packet[IP].len)
