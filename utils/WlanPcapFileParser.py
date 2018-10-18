@@ -130,7 +130,7 @@ class WlanPcapFileParser:
 			result['UDP_Checksum'] = str(packet[UDP].chksum)
 		# Get the IP information from the packet
 		if packet.haslayer(ICMP):
-			result['ICMP_Gate_Way'] = str(packet[ICMP].gw)
+			result['ICMP_Gateway_IP_Address'] = str(packet[ICMP].gw)
 			result['ICMP_Code'] = str(packet[ICMP].code)
 			result['ICMP_Originate_Timestamp'] = str(packet[ICMP].ts_ori)
 			result['ICMP_Address_Mask'] = str(packet[ICMP].addr_mask)
