@@ -1,4 +1,5 @@
 import os
+import socket
 import pcapy as p
 from scapy.all import rdpcap, Ether, IP, TCP, UDP, ICMP, DNS, Raw
 import re
@@ -93,6 +94,10 @@ class WlanPcapFileParser:
 		if packet.haslayer(IP):
 			result['IP_Source'] = str(packet[IP].src)
 			result['IP_Destination'] = str(packet[IP].dst)
+			try:
+				result['IP_Destination_Domain'] = socket.gethostbyaddr(str(packet[IP].dst))[0]
+			except:
+				result['IP_Destination_Domain'] = ''
 			result['IP_Fragment_Offset'] = str(packet[IP].frag)
 			result['IP_Protocol'] = str(packet[IP].proto)
 			result['IP_Type_Of_Service_(aka_DSCP)'] = str(packet[IP].tos)
