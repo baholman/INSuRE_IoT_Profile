@@ -88,6 +88,7 @@ class WlanPcapFileParser:
 			result['Ethernet_Source_MAC_Field'] = str(packet[Ether].src)
 			result['Ethernet_Destination_MAC_Field'] = str(packet[Ether].dst)
 			result['Ethernet_Type_Num'] = str(packet[Ether].type)
+			result['Ethernet_Type_Protocol'] = self.__getEthernetTypeString(packet[Ether].type)
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
 			result['IP_Source'] = str(packet[IP].src)
