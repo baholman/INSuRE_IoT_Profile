@@ -176,7 +176,52 @@ class WlanPcapFileParser:
 		
 		if packet.haslayer(Raw):
 			result['body'] = str(packet[Raw].load)
+			body_parts = self.__getBodyText(str(packet[Raw].load))
+			body_parts_string = ''.join(body_parts)
+			result['body_parts'] = str(body_parts)
+			result['body_parts_string'] = body_parts_string
+			#result['body_IP'] = self.__getUrlsFromString(body_parts_string == '' ? packet[Raw].load : body_parts_string)
 		
+		return result
+	
+	"""
+	Get Body Text
+
+	Gets an array of the text from the body that does not contain the bytecodes.
+
+	Params:
+	body - the raw text from the body
+
+	Return: An array of strings that make up the body of the packet
+	"""
+	def __getBodyText(self, body):
+		# Handle the body being empty
+		if body == '':
+			return ''
+
+		# Pull out the non-byte code contents
+		result = re.findall(r'\\x\w\w([^\\]*)', body)
+
+		return result
+
+	"""
+	Get URLs from String
+
+	Pull out the URLs from the string if they are present.
+
+	Params:
+	text - the text to search
+
+	Return: A string containing the URL if one is present, if not it will be an empty string
+	"""
+	def __getUrlsFromString(self, text):
+		# Handle if the string is empty
+		if text == '':
+			return ''
+
+		# Pull out any URLS present
+		result = re.findall(r'([a-zA-Z0-9]*.[a-zA-Z0-9]*.[a-zA-Z0-9]*', text)
+
 		return result
 
 	"""
