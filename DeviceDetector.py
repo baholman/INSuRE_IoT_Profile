@@ -1,4 +1,6 @@
-#!/bin/python
+#!/bin/pythonccess VCenter
+
+
 
 import sys
 
@@ -11,6 +13,7 @@ if major_python_version != 3:
 import os
 from utils.WlanPcapFileParser import WlanPcapFileParser
 from utils.DeviceTrafficSorter import DeviceTrafficSorter
+from utils.KNN import KNN
 
 def getPcapJson(experiment_dir, type_of_data):
 	# Get the directory for the pcap files
@@ -33,7 +36,7 @@ def getPcapJson(experiment_dir, type_of_data):
 # Check the number of arguments
 if len(sys.argv) != 2:
 	print('ERROR: Incorrect number of arguments provided')
-	print('python3 DeviceDetector <experiment_directory>')
+	print('python3 DeviceDetector.py <experiment_directory>')
 	exit(-1)
 
 # Get the experiment directory
@@ -49,6 +52,8 @@ if not os.path.isdir(experiment_dir):
 	print('ERROR: The experiment directory provided does not exist')
 	exit(-1)
 
+print("Processing the training data")
+
 # Check if the training pcap files have already been processed
 training_json_dir =  os.path.join(experiment_dir, 'training_json')
 if os.path.isdir(training_json_dir):
@@ -56,9 +61,18 @@ if os.path.isdir(training_json_dir):
 else:
 	getPcapJson(experiment_dir, 'training')
 
+print("Processing the evaluation data")
+
 # Check if the evaluation pcap files have already been processed
 eval_json_dir = os.path.join(experiment_dir, 'eval_json')
 if os.path.isdir(eval_json_dir):
 	print('The evaluation pcap files from this experiment have already been converted to JSON files')
 else:
 	getPcapJson(experiment_dir, 'eval')
+
+print("Running the KNN algorithm")
+
+# Run the data through the K-Nearest Neighbor algorithm
+knn = KNN()
+knn.isDir(experiment_dir)
+
