@@ -21,7 +21,7 @@ if len(sys.argv) != 3:
 	exit(-1)
 
 knn = KNN()
-knn.isDir('utils')
+knn.isDir('experiments/exp1/')
 
 # Create the dictionary of packet information split by pcap file
 parser = WlanPcapFileParser()
