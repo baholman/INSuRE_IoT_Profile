@@ -12,12 +12,16 @@ if major_python_version != 3:
 import os
 from utils.WlanPcapFileParser import WlanPcapFileParser
 from utils.DeviceTrafficSorter import DeviceTrafficSorter
+from utils.KNN import KNN
 
 # Check the number of arguments
 if len(sys.argv) != 3:
 	print('ERROR: Incorrect number of arguments provided')
 	print('python3 DeviceDetector <pcap_input_directory> <json_output_directory>')
 	exit(-1)
+
+knn = KNN()
+knn.isDir('utils')
 
 # Create the dictionary of packet information split by pcap file
 parser = WlanPcapFileParser()
