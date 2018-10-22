@@ -1,0 +1,8 @@
+{
+	"Ethernet": ["Type"],
+	"IP": ["Destination IP", "Protocol"],
+	"TCP": ["Source Port"],
+	"UDP": ["Source Port"],
+	"ICMP": ["Type"],
+	"DNS": ["Source IP"]
+}
