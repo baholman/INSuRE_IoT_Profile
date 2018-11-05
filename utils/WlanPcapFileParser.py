@@ -86,85 +86,188 @@ class WlanPcapFileParser:
 		result = {}
 		# Get the ethernet information from the packet
 		if packet.haslayer(Ether):
-			result['Ethernet_Source_MAC'] = str(packet[Ether].src)
-			result['Ethernet_Destination_MAC'] = str(packet[Ether].dst)
-			result['Ethernet_Type_Num'] = str(packet[Ether].type)
-			result['Ethernet_Type_Protocol'] = self.__getEthernetTypeString(packet[Ether].type)
+			result = self.__getEtherHeader(packet, result)
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
-			result['IP_Source_Address'] = str(packet[IP].src)
-			result['IP_Destination_Address'] = str(packet[IP].dst)
-			try:
-				result['IP_Destination_Domain'] = socket.gethostbyaddr(str(packet[IP].dst))[0]
-			except:
-				result['IP_Destination_Domain'] = ''
-			result['IP_Fragment_Offset'] = str(packet[IP].frag)
-			result['IP_Protocol_Num'] = str(packet[IP].proto)
-			result['IP_Protocol_String'] = self.__getIPProtocolString(packet[IP].proto)
-			result['IP_Type_Of_Service_(aka_DSCP)'] = str(packet[IP].tos)
-			result['IP_Header_Checksum'] = str(packet[IP].chksum)
-			result['IP_Total_Length'] = str(packet[IP].len)
-			result['IP_Options'] = str(packet[IP].options)
-			result['IP_Version'] = str(packet[IP].version)
-			result['IP_Flags'] = str(packet[IP].flags)
-			result['IP_Internet_Header_Length'] = str(packet[IP].ihl)
-			result['IP_Time_to_Live'] = str(packet[IP].ttl)
-			result['IP_Identification'] = str(packet[IP].id)
+			result = self.__getIpHeader(packet, result)
 		# Get the TCP information from the packet
 		if packet.haslayer(TCP):
-			result['TCP_Source_Port'] =  str(packet[TCP].sport)
-			result['TCP_Destination_Port'] = str(packet[TCP].dport)
-			result['TCP_Sequence_Number'] = str(packet[TCP].seq)
-			result['TCP_Acknowledge_Number'] = str(packet[TCP].ack)
-			result['TCP_Data_Offset'] = str(packet[TCP].dataofs)
-			result['TCP_Reserved_Data'] = str(packet[TCP].reserved)
-			result['TCP_Control_Flags'] = str(packet[TCP].flags)
-			result['TCP_Window_Size'] = str(packet[TCP].window)
-			result['TCP_Checksum'] = str(packet[TCP].chksum)
-			result['TCP_Urgent_Pointer'] = str(packet[TCP].urgptr)
-			result['TCP_Options'] = str(packet[TCP].options)
+			result = self.__getTcpHeader(packet, result)
 		# Get the UDP information from the packet
 		if packet.haslayer(UDP):
-			result['UDP_Source_Port'] = str(packet[UDP].sport)
-			result['UDP_Destination_Port'] = str(packet[UDP].dport)
-			result['UDP_Length'] = str(packet[UDP].len)
-			result['UDP_Checksum'] = str(packet[UDP].chksum)
-		# Get the IP information from the packet
+			result = self.__getUdpHeader(packet, result)
+		# Get the ICMP information from the packet
 		if packet.haslayer(ICMP):
-			result['ICMP_Gateway_IP_Address'] = str(packet[ICMP].gw)
-			try:
-				result['ICMP_Gateway_Domain'] = socket.gethostbyaddr(str(packet[ICMP].gw))[0]
-			except:
-				result['ICMP_Gateway_Domain'] = ''
-			result['ICMP_Code'] = str(packet[ICMP].code)
-			result['ICMP_Originate_Timestamp'] = str(packet[ICMP].ts_ori)
-			result['ICMP_Address_Mask'] = str(packet[ICMP].addr_mask)
-			result['ICMP_Sequence'] = str(packet[ICMP].seq)
-			result['ICMP_Pointer'] = str(packet[ICMP].ptr)
-			result['ICMP_Unused'] = str(packet[ICMP].unused)
-			result['ICMP_Receive_Timestamp'] = str(packet[ICMP].ts_rx)
-			result['ICMP_Checksum'] = str(packet[ICMP].chksum)
-			result['ICMP_Reserved'] = str(packet[ICMP].reserved)
-			result['ICMP_Transmit_Timestamp'] = str(packet[ICMP].ts_tx)
-			result['ICMP_Type'] = str(packet[ICMP].type)
-			result['ICMP_Identifier'] = str(packet[ICMP].id)
+			result = self.__getIcmpHeader(packet, result)
+		# Get the DNS information from the packet
 		if packet.haslayer(DNS):
-			result['DNS_Identifier'] = str(packet[DNS].id)
-			result['DNS_Query_Or_Response'] = str(packet[DNS].qr)
-			result['DNS_Op_Code'] = str(packet[DNS].opcode)
-			result['DNS_Authoritative_Answer'] = str(packet[DNS].aa)
-			result['DNS_TrunCation'] = str(packet[DNS].tc)
-			result['DNS_Recursion_Desired'] = str(packet[DNS].rd)
-			result['DNS_Recursion_Available'] = str(packet[DNS].ra)
-			result['DNS_Z_Reserved'] = str(packet[DNS].z)
-			result['DNS_Response_Code'] = str(packet[DNS].rcode)
-			result['DNS_Question_Count'] = str(packet[DNS].qdcount) # Number of entries in the question section
-			result['DNS_Ancount'] = str(packet[DNS].ancount) # Number of resource records in the answer section
-			result['DNS_Nscount'] = str(packet[DNS].nscount) # Number of name service resource records in the authority record section
-			result['DNS_Arcount'] = str(packet[DNS].arcount) # Number of resource records in the additional record section 
-			result['DNS_Query_Data'] = str(packet[DNS].qd)
+			result = self.__getDnsHeader(packet, result)
 
 		return result
+
+	"""
+	getEtherHeader
+
+	Gets a dictionary of strings from the fields in the packet Ethernet header.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet info
+
+	Return: Dictionary of Ethernet header fields
+	"""
+	def __getEtherHeader(self, packet, result):
+		result['Ethernet_Source_MAC'] = str(packet[Ether].src)
+		result['Ethernet_Destination_MAC'] = str(packet[Ether].dst)
+		result['Ethernet_Type_Num'] = str(packet[Ether].type)
+		result['Ethernet_Type_Protocol'] = self.__getEthernetTypeString(packet[Ether].type)
+		return result
+
+	"""
+	getIpHeader
+
+	Gets a dictionary of strings from the fields in the packet IP header.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet info
+
+	Return: Dictionary of IP header fields
+	"""
+	def __getIpHeader(self, packet, result):
+		result['IP_Source_Address'] = str(packet[IP].src)
+		result['IP_Destination_Address'] = str(packet[IP].dst)
+		result['ip_destination_domain'] = self.__getDomainName(packet[IP].dst)
+		result['IP_Fragment_Offset'] = str(packet[IP].frag)
+		result['IP_Protocol_Num'] = str(packet[IP].proto)
+		result['IP_Protocol_String'] = self.__getIPProtocolString(packet[IP].proto)
+		result['IP_Type_Of_Service_(aka_DSCP)'] = str(packet[IP].tos)
+		result['IP_Header_Checksum'] = str(packet[IP].chksum)
+		result['IP_Total_Length'] = str(packet[IP].len)
+		result['IP_Options'] = str(packet[IP].options)
+		result['IP_Version'] = str(packet[IP].version)
+		result['IP_Flags'] = str(packet[IP].flags)
+		result['IP_Internet_Header_Length'] = str(packet[IP].ihl)
+		result['IP_Time_to_Live'] = str(packet[IP].ttl)
+		result['IP_Identification'] = str(packet[IP].id)
+		return result
+
+	"""
+	getTcpHeader
+
+	Gets a dictionary of strings from the fields in the packet TCP header.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet headers
+
+	Return: Dictionary of TCP header fields
+	"""
+	def __getTcpHeader(self, packet, result):
+		result['TCP_Source_Port'] =  str(packet[TCP].sport)
+		result['TCP_Destination_Port'] = str(packet[TCP].dport)
+		result['TCP_Sequence_Number'] = str(packet[TCP].seq)
+		result['TCP_Acknowledge_Number'] = str(packet[TCP].ack)
+		result['TCP_Data_Offset'] = str(packet[TCP].dataofs)
+		result['TCP_Reserved_Data'] = str(packet[TCP].reserved)
+		result['TCP_Control_Flags'] = str(packet[TCP].flags)
+		result['TCP_Window_Size'] = str(packet[TCP].window)
+		result['TCP_Checksum'] = str(packet[TCP].chksum)
+		result['TCP_Urgent_Pointer'] = str(packet[TCP].urgptr)
+		result['TCP_Options'] = str(packet[TCP].options)
+		return result
+
+	"""
+	getUdpHeader
+
+	Gets a dictionary of strings from the fields in the packet UDP header.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet contents
+
+	Return: Dictionary of UDP header fields
+	"""
+	def __getUdpHeader(self, packet, result):
+		result['UDP_Source_Port'] = str(packet[UDP].sport)
+		result['UDP_Destination_Port'] = str(packet[UDP].dport)
+		result['UDP_Length'] = str(packet[UDP].len)
+		result['UDP_Checksum'] = str(packet[UDP].chksum)
+		return result
+
+	"""
+	getIcmpHeader
+
+	Gets a dictionary of strings from the fields in the packet ICMP header.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet contents
+
+	Return: Dictionary of ICMP header fields
+	"""
+	def __getIcmpHeader(self, packet, result):
+		result['ICMP_Gateway_IP_Address'] = str(packet[ICMP].gw)
+		result['ICMP_Gateway_Domain'] = self.__getDomainName(packet[ICMP].gw)
+		result['ICMP_Code'] = str(packet[ICMP].code)
+		result['ICMP_Originate_Timestamp'] = str(packet[ICMP].ts_ori)
+		result['ICMP_Address_Mask'] = str(packet[ICMP].addr_mask)
+		result['ICMP_Sequence'] = str(packet[ICMP].seq)
+		result['ICMP_Pointer'] = str(packet[ICMP].ptr)
+		result['ICMP_Unused'] = str(packet[ICMP].unused)
+		result['ICMP_Receive_Timestamp'] = str(packet[ICMP].ts_rx)
+		result['ICMP_Checksum'] = str(packet[ICMP].chksum)
+		result['ICMP_Reserved'] = str(packet[ICMP].reserved)
+		result['ICMP_Transmit_Timestamp'] = str(packet[ICMP].ts_tx)
+		result['ICMP_Type'] = str(packet[ICMP].type)
+		result['ICMP_Identifier'] = str(packet[ICMP].id)
+		return result
+
+	"""
+	getDnsHeader
+
+	Gets a dictionary of strings from the fields in the packet DNS header.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet contents
+
+	Return: Dictionary of DNS header fields
+	"""
+	def __getDnsHeader(self, packet, result):
+		result['DNS_Identifier'] = str(packet[DNS].id)
+		result['DNS_Query_Or_Response'] = str(packet[DNS].qr)
+		result['DNS_Op_Code'] = str(packet[DNS].opcode)
+		result['DNS_Authoritative_Answer'] = str(packet[DNS].aa)
+		result['DNS_TrunCation'] = str(packet[DNS].tc)
+		result['DNS_Recursion_Desired'] = str(packet[DNS].rd)
+		result['DNS_Recursion_Available'] = str(packet[DNS].ra)
+		result['DNS_Z_Reserved'] = str(packet[DNS].z)
+		result['DNS_Response_Code'] = str(packet[DNS].rcode)
+		result['DNS_Question_Count'] = str(packet[DNS].qdcount) # Number of entries in the question section
+		result['DNS_Ancount'] = str(packet[DNS].ancount) # Number of resource records in the answer section
+		result['DNS_Nscount'] = str(packet[DNS].nscount) # Number of name service resource records in the authority record section
+		result['DNS_Arcount'] = str(packet[DNS].arcount) # Number of resource records in the additional record section 
+		result['DNS_Query_Data'] = str(packet[DNS].qd)
+		return result
+	
+	"""
+	getDomainName
+
+	Get the domain name for an IP address if it is available using a reverse DNS lookup.
+
+	Params:
+	ip - A string containing an IP address
+
+	Returns: A string containing the domain name if there is one. If not, it will be an empty string.
+	"""
+	def __getDomainName(self, ip):
+		domain = ''
+		try:
+			domain = socket.gethostbyaddr(str(ip))[0]
+		except:
+			domain = ''
+		return domain
 
 	"""
 	getBody
