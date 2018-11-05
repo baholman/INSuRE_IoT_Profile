@@ -284,7 +284,6 @@ class WlanPcapFileParser:
 		
 		if packet.haslayer(Raw):
 			result['body'] = str(packet[Raw])
-			print(packet[Raw])
 			body_parts = self.__getBodyText(str(packet[Raw].load))
 			body_parts_string = ''.join(body_parts)
 			result['body_parts'] = str(body_parts)
