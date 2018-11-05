@@ -1,7 +1,4 @@
-#!/bin/pythonccess VCenter
-
-
-
+#!/bin/python
 import sys
 
 # Check that the python version being used is Python3
@@ -70,9 +67,12 @@ if os.path.isdir(eval_json_dir):
 else:
 	getPcapJson(experiment_dir, 'eval')
 
-print("Running the KNN algorithm")
+# Tell the user to add the labels to the JSON files
+print('You need to put labels in each of the JSON files for both the training and the evaluation data. Press any button to contiue when you are done.')
+input("Press Enter to continue...")
 
 # Run the data through the K-Nearest Neighbor algorithm
+print("Running the KNN algorithm")
 knn = KNN()
 knn.isDir(experiment_dir)
 
