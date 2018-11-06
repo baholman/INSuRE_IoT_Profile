@@ -68,7 +68,7 @@ class KNN():
 			attributes_training = [[0]*len(device_data['packets']) for i in range(len(attributes))]
 
 			if 'label' not in device_data.keys():
-				print('Label was not provided for ' + file_name  + ' so we are going to skip the packets in this file.')
+				print('WARNING: Device label was not provided in ' + file_name  + '. This information is required to use the packets from this file.')
 			else:
 				device_labels.append([device_data['label']]*len(device_data['packets']))
 				for attribute in attributes:
@@ -98,7 +98,7 @@ class KNN():
 			attributes_eval = [[0]*len(eval_data['packets']) for i in range(len(attributes))]
 
 			if 'label' not in eval_data.keys():
-				print('Label was not provided for ' + file_name + ' so we are going to skip the packets in this file.')
+				print('WARNING: Device label was not provided in ' + file_name + '. This information is required to use the packets in this file.')
 			else:
 				eval_labels.append([eval_data['label']]*len(eval_data['packets']))
 				for attribute in attributes:
