@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 from pprint import pprint
 from sklearn.preprocessing import StandardScaler
@@ -122,6 +123,17 @@ class KNN():
 							attributes_eval[packet][index] = 0
 					
 			"""
+
+		
+		# Verify that some usable training attributes were found
+		if attributes_training == []:
+			print('ERROR: No training attributes provided')
+			exit(-1)
+	
+		# Verify that some usable evaluation attributes were found
+		if attributes_eval == []:
+			print('ERROR: No eval attributes provided')
+			exit(-1)
 			
 			
 		self.__scaleFeatures(attributes_training, attributes_eval)
