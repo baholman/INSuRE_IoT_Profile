@@ -49,82 +49,100 @@ class KNN():
 
 
 	def __getKNNFeatures(self, exp_dir, json_data):
-		attributes = []
-
+		# Get the list of features?
+		features = []
 		for key in json_data.keys():
 			for value in json_data[key]:
-				attributes.append(value)
+				features.append(value)
 		
-		device_labels = []
-		eval_labels = []
-		attributes_eval = []
-		attributes_training = []
-		
+		# Get the directories with the training and evaluation JSON files
 		json_training_path = os.path.join(exp_dir, 'training_json')
 		json_eval_path = os.path.join(exp_dir, 'eval_json')
 
+		# Go through each of training JSON files
+		attributes_training = []
 		for file_name in os.listdir(json_training_path):
+			# Load the data into a dictionary
 			with open(os.path.join(json_training_path, file_name)) as device_file:
 				device_data = json.load(device_file)
-			attributes_training = [[0]*len(device_data['packets']) for i in range(len(attributes))]
+			#attributes_training = [[0]*len(device_data['packets']) for i in range(len(attributes))]
 
 			if 'label' not in device_data.keys():
 				print('WARNING: Device label was not provided in ' + file_name  + '. This information is required to use the packets from this file.')
-			else:
-				device_labels.append([device_data['label']]*len(device_data['packets']))
-				for attribute in attributes:
-					for index in range(len(attributes)):
-						for packet in range(len(device_data['packets'])):
-							if attribute in device_data['packets'][packet]['header']:
-								attributes_training[index][packet] = device_data['packets'][packet]['header'][attribute]
-							else:
-								attributes_training[index][packet] = 0
-			"""
-			attributes_training = [[0]*len(attributes) for i in range(len(device_data['packets']))]
-			for packet in range(len(device_data['packets'])):
-				index = 0
-				for attribute in attributes:
-					for index in range(len(attributes))
-						if attribute in device_data['packets'][packet]['header']:
-							#attributes_training[packet].append(device_data['packets'][packet]['header'][attribute])
-							attributes_training[packet][index] =  device_data['packets'][packet]['header'][attribute]
-						else:
-							#attributes_training[packet].append(0)
-							attributes_training[packet][index] = 0
-			"""
-	
+				continue
+			
+			# Get the label for the type of device from the JSON file
+			device_label = device_data['label']
+
+			# Go through all the packets in the JSON file
+			for packet in device_data['packets']:
+				packet_attributes = []
+				for feature in features:
+					# Verify that the packet data isn't malformed the JSON file
+					if 'header' not in packet.keys():
+						print('ERROR: Packet in ' + file_name + ' does not contain header section. JSON file is malformed.')
+						exit(-1)
+
+					# Get the value of the attribute from the packet
+					if feature in packet['header'].keys():
+						val = packet['header'][feature]
+					else:
+						print('WARNING: The ' + feature + ' attribute was expected in packets in the ' + file_name + ' file but was not found. The default value was used instead.')
+						val = 0
+
+					# TODO: Do any data cleaning or manipulation here
+
+					# Add the attribute value to the packet attributes
+					packet_attributes.append(val)
+
+				# Add the device label at the end of the packet attributes array
+				packet_attributes.append(device_label)
+
+				# Add the packet attributes to the array of training data
+				attributes_training.append(packet_attributes)
+		
+		# Go through each of eval JSON files
+		attributes_eval = []
 		for file_name in os.listdir(json_eval_path):
-			with open(os.path.join(json_eval_path, file_name)) as device_file:
-				eval_data = json.load(device_file)
-			attributes_eval = [[0]*len(eval_data['packets']) for i in range(len(attributes))]
+			# Load the data into a dictionary
+			with open(os.path.join(json_eval_path, file_name)) as eval_file:
+				eval_data = json.load(eval_file)
+			#attributes_training = [[0]*len(device_data['packets']) for i in range(len(attributes))]
 
 			if 'label' not in eval_data.keys():
-				print('WARNING: Device label was not provided in ' + file_name + '. This information is required to use the packets in this file.')
-			else:
-				eval_labels.append([eval_data['label']]*len(eval_data['packets']))
-				for attribute in attributes:
-					for index in range(len(attributes)):
-						for packet in range(len(eval_data['packets'])):
-							if attribute in eval_data['packets'][packet]['header']:
-								attributes_eval[index][packet] = eval_data['packets'][packet]['header'][attribute]
-							else:
-								attributes_eval[index][packet] = 0
+				print('WARNING: Device label was not provided in ' + file_name  + '. This information is required to use the packets from this file.')
+				continue
+			
+			# Get the label for the type of device from the JSON file
+			device_label = eval_data['label']
 
-			"""
-			attributes_eval = [[0]*len(attributes) for i in range(len(eval_data['packets']))]
-			for packet in range(len(eval_data['packets'])):
-				for attribute in attributes:
-					for index in range(len(attributes))
-						if attribute in eval_data['packets'][packet]['header']:
-							#attributes_eval[packet].append(eval_data['packets'][packet]['header'][attribute])
-							attributes_eval[packet][index] = eval_data['packets'][packet]['header'][attribute]
-						else:
-							#attributes_eval[packet].append(0)
-							attributes_eval[packet][index] = 0
-					
-			"""
+			# Go through all the packets in the JSON file
+			for packet in eval_data['packets']:
+				packet_attributes = []
+				for feature in features:
+					# Verify that the packet data isn't malformed the JSON file
+					if 'header' not in packet.keys():
+						print('ERROR: Packet in ' + file_name + ' does not contain header section. JSON file is malformed.')
+						exit(-1)
 
-		
+					# Get the value of the attribute from the packet
+					if feature in packet['header'].keys():
+						val = packet['header'][feature]
+					else:
+						print('WARNING: The ' + feature + ' attribute was expected in packets in the ' + file_name + ' file but was not found. The default value was used instead.')
+						val = 0
+
+					# TODO: Do any data cleaning or manipulation here
+
+					# Add the attribute value to the packet attributes
+					packet_attributes.append(val)
+
+				# Add the device label at the end of the packet attributes array
+				packet_attributes.append(device_label)
+
+				# Add the packet attributes to the array of training data
+				attributes_eval.append(packet_attributes)
+
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
 			print('ERROR: No training attributes provided')
@@ -134,8 +152,7 @@ class KNN():
 		if attributes_eval == []:
 			print('ERROR: No eval attributes provided')
 			exit(-1)
-			
-			
+
 		self.__scaleFeatures(attributes_training, attributes_eval)
 		self.__trainAndPredict(device_labels, attributes_training, attributes_eval)
 

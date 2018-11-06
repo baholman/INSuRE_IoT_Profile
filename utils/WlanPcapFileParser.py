@@ -137,7 +137,7 @@ class WlanPcapFileParser:
 	def __getIpHeader(self, packet, result):
 		result['IP_Source_Address'] = str(packet[IP].src)
 		result['IP_Destination_Address'] = str(packet[IP].dst)
-		result['ip_destination_domain'] = self.__getDomainName(packet[IP].dst)
+		result['IP_Destination_Domain'] = self.__getDomainName(packet[IP].dst)
 		result['IP_Fragment_Offset'] = str(packet[IP].frag)
 		result['IP_Protocol_Num'] = str(packet[IP].proto)
 		result['IP_Protocol_String'] = self.__getIPProtocolString(packet[IP].proto)
