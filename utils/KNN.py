@@ -60,8 +60,8 @@ class KNN():
 		json_eval_path = os.path.join(exp_dir, 'eval_json')
 
 		# Get the arrays of attributes for the different types of data
-		attributes_training = self.__getAttributesFromJsonFiles(json_training_path, features, "training")
-		attributes_eval = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")	
+		attributes_training, training_labels = self.__getAttributesFromJsonFiles(json_training_path, features, "training")
+		attributes_eval, eval_labels = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")	
 
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
@@ -72,9 +72,10 @@ class KNN():
 		if attributes_eval == []:
 			print('ERROR: No eval attributes provided')
 			exit(-1)
-
+		
 		self.__scaleFeatures(attributes_training, attributes_eval)
-		self.__trainAndPredict(device_labels, attributes_training, attributes_eval)
+		eval_pred = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
+		self.__evalKNN(eval_pred, eval_labels)
 
 	"""
 	getAttributesFromJsonFiles
@@ -90,6 +91,7 @@ class KNN():
 	"""
 	def __getAttributesFromJsonFiles(self, json_dir_path, features, type_of_attributes):
 		attributes = []
+		device_labels = []
 
 		# Go through each of JSON files
 		for file_name in os.listdir(json_dir_path):
@@ -126,12 +128,12 @@ class KNN():
 					packet_attributes.append(val)
 
 				# Add the device label at the end of the packet attributes array
-				packet_attributes.append(device_label)
+				device_labels.append(device_label)
 
 				# Add the packet attributes to the array of training data
 				attributes.append(packet_attributes)
 
-		return attributes
+		return attributes, device_labels
 
 	def __scaleFeatures(self, attributes_training, attributes_eval):
 		scaler = StandardScaler()  
@@ -141,16 +143,16 @@ class KNN():
 		attributes_eval = scaler.transform(attributes_eval)
 
 
-	def __trainAndPredict(self, device_labels, attributes_training, attributes_eval):
+	def __trainAndPredict(self, training_labels, attributes_training, attributes_eval):
 		n_neighbors_count = 5
 		classifier = KNeighborsClassifier(n_neighbors=n_neighbors_count)
-		classifier.fit(attributes_training, device_labels)
+		classifier.fit(attributes_training, training_labels)
 		eval_pred = classifier.predict(attributes_eval)
-		self.__evalKNN(eval_pred, device_labels)
+		return eval_pred
 
-	def __evalKNN(self, eval_pred, device_labels):
-		print(confusion_matrix(device_labels, eval_pred))  
-		print(classification_report(device_labels, eval_pred))  
+	def __evalKNN(self, eval_pred, eval_labels):
+		print(confusion_matrix(eval_labels, eval_pred))  
+		print(classification_report(eval_labels, eval_pred))  
 
 
 
