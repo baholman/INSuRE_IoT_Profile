@@ -1,7 +1,7 @@
 import os
 import socket
 import pcapy as p
-from scapy.all import rdpcap, Ether, IP, TCP, UDP, ICMP, DNS, Raw
+from scapy.all import rdpcap, Ether, ARP, IP, TCP, UDP, ICMP, DNS, Raw
 import re
 
 """
@@ -84,6 +84,9 @@ class WlanPcapFileParser:
 	"""
 	def __getHeader(self, packet):
 		result = {}
+
+		# Get the type of packet
+		result = self.__getTypeOfPacket(packet, result)
 		# Get the ethernet information from the packet
 		if packet.haslayer(Ether):
 			result = self.__getEtherHeader(packet, result)
@@ -102,6 +105,53 @@ class WlanPcapFileParser:
 		# Get the DNS information from the packet
 		if packet.haslayer(DNS):
 			result = self.__getDnsHeader(packet, result)
+
+		return result
+
+	"""
+	getTypeOfPacket
+
+	Gets the type of packet.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet info
+
+	Return: Dictionary of Ethernet header fields
+	"""
+	def __getTypeOfPacket(self, packet, result):
+		type = "Unknown"
+
+		# Update the type if an ethernet header exists (Data-Link layer)
+		if packet.haslayer(Ether):
+			type = "Ethernet"
+
+		# Update the type if an ARP header exists (Data-Link layer)
+		if packet.haslayer(ARP):
+			type = "ARP"
+
+		# Update the type if an IP header exists (Network layer)
+		if packet.haslayer(IP):
+			type = "IP"
+
+		# Update the type if an ICMP header exists (Network layer)
+		if packet.haslayer(ICMP):
+			type = "ICMP"
+
+		# Update the type if a TCP header exists (Transport layer)
+		if packet.haslayer(TCP):
+			type = "TCP"
+
+		# Update the type if a UDP header exists (Transport layer)
+		if packet.haslayer(UDP):
+			type = "UDP"
+
+		# Update the type if an DNS header exists (Transport layer)
+		if packet.haslayer(DNS):
+			type = "DNS"
+
+
+		result["Packet_Type"] = type
 
 		return result
 
