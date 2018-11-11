@@ -12,24 +12,6 @@ from utils.WlanPcapFileParser import WlanPcapFileParser
 from utils.DeviceTrafficSorter import DeviceTrafficSorter
 from utils.KNN import KNN
 
-def getPcapJson(experiment_dir, type_of_data):
-	# Get the directory for the pcap files
-	pcap_dir = os.path.join(experiment_dir, type_of_data + '_pcaps')
-	if not os.path.isdir(pcap_dir):
-		print('ERROR: The ' + type_of_data + ' pcap directory provided does not exist')
-
-	# Create the dictionary of packet information split by pcap file
-	parser = WlanPcapFileParser()
-	pcap_dict = parser.getJson(pcap_dir)
-
-	# Make a directory for the training output
-	json_dir = os.path.join(experiment_dir, type_of_data + '_json')
-	os.makedirs(json_dir)
-
-	# Create the device specific json files with packets
-	sorter = DeviceTrafficSorter()
-	sorter.genDeviceFiles(pcap_dict, json_dir)
-
 # Check the number of arguments
 if len(sys.argv) != 2:
 	print('ERROR: Incorrect number of arguments provided')
@@ -49,23 +31,29 @@ if not os.path.isdir(experiment_dir):
 	print('ERROR: The experiment directory provided does not exist')
 	exit(-1)
 
-print("Processing the training data")
+print("Processing the PCAP files")
 
 # Check if the training pcap files have already been processed
-training_json_dir =  os.path.join(experiment_dir, 'training_json')
-if os.path.isdir(training_json_dir):
-	print('The training pcap files from this experiment have already been converted to JSON files')
+json_dir =  os.path.join(experiment_dir, 'json')
+if os.path.isdir(json_dir):
+	print('The pcap files from this experiment have already been converted to JSON files')
 else:
-	getPcapJson(experiment_dir, 'training')
+	# Get the directory for the pcap files
+	pcap_dir = os.path.join(experiment_dir, 'pcaps')
+	if not os.path.isdir(pcap_dir):
+		print('ERROR: The pcap directory provided does not exist')
 
-print("Processing the evaluation data")
+	# Create the dictionary of packet information split by pcap file
+	parser = WlanPcapFileParser()
+	pcap_dict = parser.getJson(pcap_dir)
 
-# Check if the evaluation pcap files have already been processed
-eval_json_dir = os.path.join(experiment_dir, 'eval_json')
-if os.path.isdir(eval_json_dir):
-	print('The evaluation pcap files from this experiment have already been converted to JSON files')
-else:
-	getPcapJson(experiment_dir, 'eval')
+	# Make a directory for the training output
+	json_dir = os.path.join(experiment_dir, 'json')
+	os.makedirs(json_dir)
+
+	# Create the device specific json files with packets
+	sorter = DeviceTrafficSorter()
+	sorter.genDeviceFiles(pcap_dict, json_dir)
 
 # Tell the user to add the labels to the JSON files
 print('You need to put labels in each of the JSON files for both the training and the evaluation data. Press any button to contiue when you are done.')
