@@ -56,7 +56,13 @@ else:
 	sorter.genDeviceFiles(pcap_dict, json_dir)
 
 # Tell the user to add the labels to the JSON files
-print('You need to do the following before continuing:\n1) Create a training_json directory\n2) Create an eval_json directory\n3) You need to move files from the json directory into the training_json and eval_json directory based on what you are trying to evaluate\n4) You need to put the device label in each of the json files in the training_json and eval_json directories\n5) Press enter to continue on this prompt\n\nNote: The previous steps will not be repeated unless you delete the training_json and eval_json files. So you can safely stop the program here and restart it.')
+print(('You need to do the following before continuing:\n'
+	'1) Create a training_json directory\n'
+	'2) Create an eval_json directory\n'
+	'3) You need to move files from the json directory into the training_json and eval_json directory based on what you are trying to evaluate\n'
+	'4) You need to put the device label in each of the json files in the training_json and eval_json directories\n'
+	'5) Press enter to continue on this prompt\n\n'
+	'Note: The previous steps will not be repeated unless you delete the json directory. So you can safely stop the program here and restart it.'))
 input("Press Enter to continue...")
 
 # Run the data through the K-Nearest Neighbor algorithm
