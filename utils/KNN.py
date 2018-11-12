@@ -19,12 +19,15 @@ class KNN():
 
 	Params:
 	exp_dir - name of the experimental directory as a string
+	features_file_name - a string containing the name of the features file to use
 	"""
-	def isDir(self, exp_dir):
+	def isDir(self, exp_dir, features_file_name):
+		# Check if the experiment directory exists
 		if (not os.path.isdir(exp_dir)):
 			print('Error: directory \"' + exp_dir + '\" does not exists')
 			return
-		self.__parseFeaturesFromJson(exp_dir)
+		
+		self.__parseFeaturesFromJson(exp_dir, features_file_name)
 
 
 	"""
@@ -36,8 +39,8 @@ class KNN():
 	exp_dir - name of the experimental directory as a string
 	feature_json - name of json file as string (default is features.json)
 	"""
-	def __parseFeaturesFromJson(self, exp_dir, feature_json = 'features.json'):
-		json_file_path = os.path.join(exp_dir, feature_json)
+	def __parseFeaturesFromJson(self, exp_dir, features_file_name = 'time_flow_features.json'):
+		json_file_path = os.path.join(exp_dir, feature_file_name)
 		if (not os.path.exists(json_file_path)):
 			print('Error: JSON file \"' + json_file_path + '\" does not exists')
 			return

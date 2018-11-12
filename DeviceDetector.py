@@ -68,5 +68,5 @@ input("Press Enter to continue...")
 # Run the data through the K-Nearest Neighbor algorithm
 print("Running the KNN algorithm")
 knn = KNN()
-knn.isDir(experiment_dir)
+knn.isDir(experiment_dir, 'time_flow_features.json')
 
