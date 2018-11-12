@@ -90,6 +90,9 @@ class WlanPcapFileParser:
 		# Get the ethernet information from the packet
 		if packet.haslayer(Ether):
 			result = self.__getEtherHeader(packet, result)
+		#Get thr ARP information from the packet
+		if packet.haslayer(ARP):
+			result = self.__getArpHeader(packet, result)
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
 			result = self.__getIpHeader(packet, result)
@@ -171,6 +174,29 @@ class WlanPcapFileParser:
 		result['Ethernet_Destination_MAC'] = str(packet[Ether].dst)
 		result['Ethernet_Type_Num'] = str(packet[Ether].type)
 		result['Ethernet_Type_Protocol'] = self.__getEthernetTypeString(packet[Ether].type)
+		return result
+
+	"""
+	getArpHeader
+
+	Gets a dictionary of strings from the fields in the packet ARP header.
+
+	Params: 
+	packet - A packet object
+	result - A dictionary of the current packet info
+
+	Return: Dictionary of ARP header fields
+	"""
+	def __getArpHeader(self,packet, result):
+		result['ARP_Hardware_Type'] = str(packet[ARP].hwtype)
+		result['ARP_Protocol_Type'] = str(packet[ARP].ptype)
+		result['ARP_Hardware_Length'] = str(packet[ARP].hwlen)
+		result['ARP_Protocol_Length'] = str(packet[ARP].plen)
+		result['ARP_Sender_Hardware_Address'] = str(packet[ARP].hwsrc)
+		result['ARP_Sender_Protocol_Address'] = str(packet[ARP].psrc)
+		result['ARP_Target_Hardware_Address'] = str(packet[ARP].hwdst)
+		result['ARP_Target_Protocol_Address'] = str(packet[ARP].pdst)
+		result['ARP_OP_Code'] = str(packet[ARP].op)
 		return result
 
 	"""

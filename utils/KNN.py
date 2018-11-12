@@ -47,7 +47,15 @@ class KNN():
 		pprint(json_data)
 		self.__getKNNFeatures(exp_dir, json_data)
 
+	"""
+	getKNNFeatures
 
+	Gets the attributes from the features.json and calls the other functions in the KNN algorithm
+
+	Params:
+	exp_dir - experiment directory
+	json_data - features to exract and use in KNN algorithm
+	"""
 	def __getKNNFeatures(self, exp_dir, json_data):
 		# Get the list of features?
 		features = []
@@ -87,7 +95,7 @@ class KNN():
 	features - An array of features to look for in the packets
 	type_of_attributes - A string that specifies either training or evaluation. This will mainly be used to provide better error messages.
 
-	Returns: A 2D array of attributes formatted for use by KNN algorithm
+	Returns: A 2D array of attributes formatted for use by KNN algorithm, and a list of device labels to use by KNN algorithm
 	"""
 	def __getAttributesFromJsonFiles(self, json_dir_path, features, type_of_attributes):
 		attributes = []
@@ -135,6 +143,15 @@ class KNN():
 
 		return attributes, device_labels
 
+	"""
+	scaleFeatures
+
+	Fits the KNN alogrithm using the training data set
+
+	Params:
+	attributes_training - the training set
+	attributes_eval - the evaluation set
+	"""
 	def __scaleFeatures(self, attributes_training, attributes_eval):
 		scaler = StandardScaler()  
 		scaler.fit(attributes_training)
@@ -142,7 +159,19 @@ class KNN():
 		attributes_training = scaler.transform(attributes_training)
 		attributes_eval = scaler.transform(attributes_eval)
 
+	"""
+	trainAndPredict
 
+	Uses a specified amount of K-neighbors to classify/train and predict
+
+	Params:
+	training_labels - the labels of devices from the training set
+	attributes_training - the training set
+	attributes_eval - the evaluation set
+
+	Return:
+	eval_pred - the prediction on the evaluation set
+	"""
 	def __trainAndPredict(self, training_labels, attributes_training, attributes_eval):
 		n_neighbors_count = 5
 		classifier = KNeighborsClassifier(n_neighbors=n_neighbors_count)
@@ -150,6 +179,15 @@ class KNN():
 		eval_pred = classifier.predict(attributes_eval)
 		return eval_pred
 
+	"""
+	evalKNN
+
+	Uses information provided to evaluate device(s) using the KNN machine learning algorithm
+
+	Params:
+	eval_pred - the prediction on the evaluation set
+	eval_labels - the labels of devices in the evaluation set
+	"""
 	def __evalKNN(self, eval_pred, eval_labels):
 		print(confusion_matrix(eval_labels, eval_pred))  
 		print(classification_report(eval_labels, eval_pred))  
