@@ -187,7 +187,7 @@ class WlanPcapFileParser:
 
 	Return: Dictionary of ARP header fields
 	"""
-	def __getArpHeader(self,packet, result):
+	def __getArpHeader(self, packet, result):
 		result['ARP_Hardware_Type'] = str(packet[ARP].hwtype)
 		result['ARP_Protocol_Type'] = str(packet[ARP].ptype)
 		result['ARP_Hardware_Length'] = str(packet[ARP].hwlen)
@@ -197,6 +197,10 @@ class WlanPcapFileParser:
 		result['ARP_Target_Hardware_Address'] = str(packet[ARP].hwdst)
 		result['ARP_Target_Protocol_Address'] = str(packet[ARP].pdst)
 		result['ARP_OP_Code'] = str(packet[ARP].op)
+		if (result['Ethernet_Type_Num'] == 0x0800):
+			result['ARP_Header_Length'] = 28
+		else:
+			result['ARP_Header_Length'] = 'Unknown'
 		return result
 
 	"""
