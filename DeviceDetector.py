@@ -34,7 +34,7 @@ if not os.path.isdir(experiment_dir):
 print("Processing the PCAP files")
 
 # Check if the training pcap files have already been processed
-json_dir =  os.path.join(experiment_dir, 'json')
+json_dir =  os.path.join(experiment_dir, 'content_json')
 if os.path.isdir(json_dir):
 	print('The pcap files from this experiment have already been converted to JSON files')
 else:
@@ -48,7 +48,7 @@ else:
 	pcap_dict = parser.getJson(pcap_dir)
 
 	# Make a directory for the training output
-	json_dir = os.path.join(experiment_dir, 'json')
+	json_dir = os.path.join(experiment_dir, 'content_json')
 	os.makedirs(json_dir)
 
 	# Create the device specific json files with packets
@@ -68,5 +68,5 @@ input("Press Enter to continue...")
 # Run the data through the K-Nearest Neighbor algorithm
 print("Running the KNN algorithm")
 knn = KNN()
-knn.isDir(experiment_dir)
+knn.isDir(experiment_dir, 'content_features.json')
 
