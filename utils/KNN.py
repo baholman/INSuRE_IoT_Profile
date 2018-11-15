@@ -40,7 +40,7 @@ class KNN():
 	feature_json - name of json file as string (default is features.json)
 	"""
 	def __parseFeaturesFromJson(self, exp_dir, features_file_name = 'time_flow_features.json'):
-		json_file_path = os.path.join(exp_dir, feature_file_name)
+		json_file_path = os.path.join(exp_dir, features_file_name)
 		if (not os.path.exists(json_file_path)):
 			print('Error: JSON file \"' + json_file_path + '\" does not exists')
 			return
