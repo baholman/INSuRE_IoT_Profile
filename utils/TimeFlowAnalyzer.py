@@ -38,25 +38,25 @@ class TimeFlowAnalyzer:
 		output = []
 		for file_name in os.listdir(input_dir):
 			input_file_path = os.path.join(input_dir, file_name)
-			output = self.__getConversationsForDevice(input_file_path, file_name, output)
+			output = self.__getFlowsForDevice(input_file_path, file_name, output)
 
 		output = self.__getPacketFlowInformation(output)
 
 		return output
 
 	"""
-	Get Conversations for Device
+	Get Flows for Device
 
-	Get the conversations for a specific device.
+	Get the flows for a specific device.
 
 	Params:
 	input_file_path - a string containing the path to the input file
 	file_name - a string containing the name of the device file
-	all_conversations - an array of all the conversations between devices
+	all_flows - an array of all the flows between devices
 
 	Returns: an array of all conversations between devices
 	"""
-	def __getConversationsForDevice(self, input_file_path, file_name, all_conversations):
+	def __getFlowsForDevice(self, input_file_path, file_name, all_flows):
 		# Read in the input file and convert it to a dictionary
 		input_file = open(input_file_path, "r")
 		input_json = json.loads(input_file.read())
@@ -65,26 +65,25 @@ class TimeFlowAnalyzer:
 		packets = input_json["packets"]
 
 		# Determine the conversations in the packets (packets between a specific source and destination MAC address)
-		all_conversations = self.__getConversations(packets, file_name, all_conversations)
+		all_flows = self.__getFlows(packets, file_name, all_flows)
 
-		return all_conversations
+		return all_flows
 
 	"""
-	Get Conversations
+	Get Flows
 
-	Sorts out the packets based on which packets are talking from a specific source MAC address to a specific
-	destination MAC address. A conversation being defined as all the packets from one MAC address to another.
-	This will be used to make further processing easier and more separated out.
+	Sorts out the packets based on which packets are talking from a specific IP address to a specific
+	IP address.
 
 	Params:
 	packets - a list of all the packets from the device JSON file
 	file_name - a string containing the name of the device file
-	all_conversations - an array of all conversations between devices
+	all_flows - an array of all flows between devices
 
-	Returns: an array of dictionaries containing the conversation information
+	Returns: an array of dictionaries containing the flow information
 	"""
-	def __getConversations(self, packets, file_name, all_conversations):
-		output = all_conversations
+	def __getFlows(self, packets, file_name, all_flows):
+		output = all_flows
 
 		for packet in packets:
 			source_MAC_address = packet["Ethernet_Source_MAC_Address"]
