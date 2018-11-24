@@ -40,7 +40,7 @@ class KNN():
 	feature_json - name of json file as string (default is features.json)
 	"""
 	def __parseFeaturesFromJson(self, exp_dir, features_file_name = 'time_flow_features.json'):
-		json_file_path = os.path.join(exp_dir, feature_file_name)
+		json_file_path = os.path.join(exp_dir, features_file_name)
 		if (not os.path.exists(json_file_path)):
 			print('Error: JSON file \"' + json_file_path + '\" does not exists')
 			return
@@ -71,8 +71,8 @@ class KNN():
 		json_eval_path = os.path.join(exp_dir, 'eval_json')
 
 		# Get the arrays of attributes for the different types of data
-		attributes_training, training_labels = self.__getAttributesFromJsonFiles(json_training_path, features, "training")
-		attributes_eval, eval_labels = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")	
+		attributes_training, training_labels, device_labels = self.__getAttributesFromJsonFiles(json_training_path, features, "training")
+		attributes_eval, eval_labels, device_label_forEval = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")	
 
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
@@ -84,9 +84,14 @@ class KNN():
 			print('ERROR: No eval attributes provided')
 			exit(-1)
 		
+		# Gets number of packets in evaluation set
+		packet_count = len(eval_labels)
+		# Removes duplicate labels from list
+		device_labels = list(set(device_labels))
+
 		self.__scaleFeatures(attributes_training, attributes_eval)
-		eval_pred = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
-		self.__evalKNN(eval_pred, eval_labels)
+		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
+		self.__evalKNN(eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval)
 
 	"""
 	getAttributesFromJsonFiles
@@ -98,11 +103,12 @@ class KNN():
 	features - An array of features to look for in the packets
 	type_of_attributes - A string that specifies either training or evaluation. This will mainly be used to provide better error messages.
 
-	Returns: A 2D array of attributes formatted for use by KNN algorithm, and a list of device labels to use by KNN algorithm
+	Returns: A 2D array of attributes formatted for use by KNN algorithm, a list of device labels to use by KNN algorithm, and a list of all labels of devices
 	"""
 	def __getAttributesFromJsonFiles(self, json_dir_path, features, type_of_attributes):
 		attributes = []
 		device_labels = []
+		device_all_labels = []
 
 		# Go through each of JSON files
 		for file_name in os.listdir(json_dir_path):
@@ -116,6 +122,7 @@ class KNN():
 			
 			# Get the label for the type of device from the JSON file
 			device_label = device_data['label']
+			device_all_labels.append(device_label)
 
 			# Go through all the packets in the JSON file
 			for packet in device_data['packets']:
@@ -144,7 +151,7 @@ class KNN():
 				# Add the packet attributes to the array of training data
 				attributes.append(packet_attributes)
 
-		return attributes, device_labels
+		return attributes, device_labels, device_all_labels
 
 	"""
 	scaleFeatures
@@ -172,28 +179,41 @@ class KNN():
 	attributes_training - the training set
 	attributes_eval - the evaluation set
 
-	Return:
-	eval_pred - the prediction on the evaluation set
+	Return - the prediction on the evaluation set, and the classifier fitted for the specific attributes
 	"""
 	def __trainAndPredict(self, training_labels, attributes_training, attributes_eval):
 		n_neighbors_count = 5
 		classifier = KNeighborsClassifier(n_neighbors=n_neighbors_count)
 		classifier.fit(attributes_training, training_labels)
 		eval_pred = classifier.predict(attributes_eval)
-		return eval_pred
+		return eval_pred, classifier
 
 	"""
 	evalKNN
 
-	Uses information provided to evaluate device(s) using the KNN machine learning algorithm
+	Uses information provided to evaluate device(s) using the KNN machine learning algorithm, and gives probability/score of each device.
 
 	Params:
 	eval_pred - the prediction on the evaluation set
 	eval_labels - the labels of devices in the evaluation set
+	classifier - the classifier for these sets
+	device_labels - labels of each device with no duplicates
+	packet_count - number of packets
+	attributes_eval - attributes from evaluation set
 	"""
-	def __evalKNN(self, eval_pred, eval_labels):
+	def __evalKNN(self, eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval):
+		scores = []
+
+		for label in device_labels:
+			label_array = [label]*packet_count
+			score_label = classifier.score(attributes_eval, label_array)
+			scores.append(label + ' has score = ' + str(score_label))
+
 		print(confusion_matrix(eval_labels, eval_pred))  
-		print(classification_report(eval_labels, eval_pred))  
+		print(classification_report(eval_labels, eval_pred))
+
+		for score in scores:
+			print(score)
 
 
 
