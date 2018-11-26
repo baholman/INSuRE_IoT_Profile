@@ -9,7 +9,7 @@ if major_python_version != 3:
 
 import os
 from utils.WlanPcapFileParser import WlanPcapFileParser
-from utils.DeviceTrafficSorter import DeviceTrafficSorter
+#from utils.DeviceTrafficSorter import DeviceTrafficSorter
 from utils.KNN import KNN
 
 # Check the number of arguments
