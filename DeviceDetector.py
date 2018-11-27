@@ -1,6 +1,10 @@
 #!/bin/python
 import sys
 
+# Ignore Future warning error
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 # Check that the python version being used is Python3
 major_python_version = sys.version_info[0]
 if major_python_version != 3:
@@ -9,7 +13,7 @@ if major_python_version != 3:
 
 import os
 from utils.WlanPcapFileParser import WlanPcapFileParser
-#from utils.DeviceTrafficSorter import DeviceTrafficSorter
+from utils.DeviceTrafficSorter import DeviceTrafficSorter
 from utils.KNN import KNN
 
 # Check the number of arguments

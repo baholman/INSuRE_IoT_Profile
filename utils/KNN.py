@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-from pprint import pprint
 # Used for implementing KNN
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -52,7 +51,7 @@ class KNN():
 		
 		with open(json_file_path) as json_file:
 			json_data = json.load(json_file)
-		pprint(json_data)
+		
 		self.__getKNNFeatures(exp_dir, json_data)
 
 	"""
@@ -97,7 +96,8 @@ class KNN():
 		self.__scaleFeatures(attributes_training, attributes_eval)
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
 		self.__evalKNN(eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval)
-		self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels)
+		#Uncomment code to find K value graph
+		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels)
 
 	"""
 	getAttributesFromJsonFiles
@@ -188,7 +188,7 @@ class KNN():
 	Return - the prediction on the evaluation set, and the classifier fitted for the specific attributes
 	"""
 	def __trainAndPredict(self, training_labels, attributes_training, attributes_eval):
-		n_neighbors_count = 5
+		n_neighbors_count = 2
 		classifier = KNeighborsClassifier(n_neighbors=n_neighbors_count)
 		classifier.fit(attributes_training, training_labels)
 		eval_pred = classifier.predict(attributes_eval)
@@ -215,9 +215,12 @@ class KNN():
 			score_label = classifier.score(attributes_eval, label_array)
 			scores.append(label + ' has score = ' + str(score_label))
 
-		print(confusion_matrix(eval_labels, eval_pred))  
-		print(classification_report(eval_labels, eval_pred))
+		print('\nThe following is the \"Confusion Matrix\"')
+		print(confusion_matrix(eval_labels, eval_pred)) 
+		#print('\nThe following is the \"Classification Report\"') 
+		#print(classification_report(eval_labels, eval_pred))
 
+		print('\nListed below are the \"scores\" for each device in the training set')
 		for score in scores:
 			print(score)
 
@@ -225,6 +228,8 @@ class KNN():
 	findKValue
 
 	Prints a graph of the error of each k value (1 to 40). It uses matplotlib, feh, and a X server
+
+	**To run this code, the function call in getKNNFeatures must be uncommented**
 
 	Params:
 	attributes_training - the training set
