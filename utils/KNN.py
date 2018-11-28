@@ -1,10 +1,14 @@
 import os
 import sys
 import json
-from pprint import pprint
+# Used for implementing KNN
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
+# Used for finding K value
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
 """
 K-Nearest Neighbor
@@ -47,7 +51,7 @@ class KNN():
 		
 		with open(json_file_path) as json_file:
 			json_data = json.load(json_file)
-		pprint(json_data)
+		
 		self.__getKNNFeatures(exp_dir, json_data)
 
 	"""
@@ -92,6 +96,8 @@ class KNN():
 		self.__scaleFeatures(attributes_training, attributes_eval)
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
 		self.__evalKNN(eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval)
+		#Uncomment code to find K value graph
+		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels)
 
 	"""
 	getAttributesFromJsonFiles
@@ -182,7 +188,7 @@ class KNN():
 	Return - the prediction on the evaluation set, and the classifier fitted for the specific attributes
 	"""
 	def __trainAndPredict(self, training_labels, attributes_training, attributes_eval):
-		n_neighbors_count = 5
+		n_neighbors_count = 2
 		classifier = KNeighborsClassifier(n_neighbors=n_neighbors_count)
 		classifier.fit(attributes_training, training_labels)
 		eval_pred = classifier.predict(attributes_eval)
@@ -203,18 +209,67 @@ class KNN():
 	"""
 	def __evalKNN(self, eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval):
 		scores = []
+		score_dict = {}
 
 		for label in device_labels:
 			label_array = [label]*packet_count
 			score_label = classifier.score(attributes_eval, label_array)
 			scores.append(label + ' has score = ' + str(score_label))
+			score_dict[label] = str(score_label)
 
-		print(confusion_matrix(eval_labels, eval_pred))  
-		print(classification_report(eval_labels, eval_pred))
+		print('\nThe following is the \"Confusion Matrix\"')
+		print(confusion_matrix(eval_labels, eval_pred)) 
+		#print('\nThe following is the \"Classification Report\"') 
+		#print(classification_report(eval_labels, eval_pred))
 
+		print('\nListed below are the \"scores\" for each device in the training set')
 		for score in scores:
 			print(score)
+		
+		self.__saveScoreToJson(score_dict)
 
+	"""
+	saveScoreToJson
 
+	Saves the scores/accuracy of each label to a json file
+
+	Params:
+	score_dict - a dictionary of each label of devices and their scores
+	"""
+	def __saveScoreToJson(self, score_dict):
+		with open('scores.json', 'w') as outfile:
+			json.dump(score_dict, outfile)
+
+	"""
+	findKValue
+
+	Prints a graph of the error of each k value (1 to 40). It uses matplotlib, feh, and a X server
+
+	**To run this code, the function call in getKNNFeatures must be uncommented**
+
+	Params:
+	attributes_training - the training set
+	attributes_eval - the eval set
+	training labels - the labels of the devices from the training set
+	eval_labels - the labels of the devices from the eval set
+	"""
+	def __findKValue(self, attributes_training, attributes_eval, training_labels, eval_labels):
+		error = []
+		# Calculating error for K values between 1 and 40
+		for i in range(1, 40):  
+			knn = KNeighborsClassifier(n_neighbors=i)
+			knn.fit(attributes_training, training_labels)
+			pred_i = knn.predict(attributes_eval)
+			error.append(np.mean(pred_i != eval_labels))
+		# Prints Graph of K-Value Error
+		# Must install feh and an X server (Xming)
+		matplotlib.use('Svg')
+		plt.figure(figsize=(12, 6))
+		plt.plot(range(1, 40), error, color='red', linestyle='dashed', marker='o', markerfacecolor='blue', markersize=10)
+		plt.title('Error Rate K Value')
+		plt.xlabel('K Value')
+		plt.ylabel('Mean Error')
+		plt.savefig('kGraph.png')
+		os.system('feh kGraph.png')
 
 

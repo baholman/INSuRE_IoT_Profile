@@ -86,7 +86,7 @@ class WlanPcapFileParser:
 		result = {}
 
 		# Get the timestamp that the packet was sent at
-		result["time"] = packet.time
+		result['time'] = packet.time
 		# Get the type of packet
 		result = self.__getTypeOfPacket(packet, result)
 		# Get the ethernet information from the packet
@@ -125,38 +125,38 @@ class WlanPcapFileParser:
 	Return: Dictionary of Ethernet header fields
 	"""
 	def __getTypeOfPacket(self, packet, result):
-		type = "Unknown"
+		type = 'Unknown'
 
 		# Update the type if an ethernet header exists (Data-Link layer)
 		if packet.haslayer(Ether):
-			type = "Ethernet"
+			type = 'Ethernet'
 
 		# Update the type if an ARP header exists (Data-Link layer)
 		if packet.haslayer(ARP):
-			type = "ARP"
+			type = 'ARP'
 
 		# Update the type if an IP header exists (Network layer)
 		if packet.haslayer(IP):
-			type = "IP"
+			type = 'IP'
 
 		# Update the type if an ICMP header exists (Network layer)
 		if packet.haslayer(ICMP):
-			type = "ICMP"
+			type = 'ICMP'
 
 		# Update the type if a TCP header exists (Transport layer)
 		if packet.haslayer(TCP):
-			type = "TCP"
+			type = 'TCP'
 
 		# Update the type if a UDP header exists (Transport layer)
 		if packet.haslayer(UDP):
-			type = "UDP"
+			type = 'UDP'
 
 		# Update the type if an DNS header exists (Transport layer)
 		if packet.haslayer(DNS):
-			type = "DNS"
+			type = 'DNS'
 
 
-		result["Packet_Type"] = type
+		result['Packet_Type'] = type
 
 		return result
 
