@@ -63,84 +63,35 @@ class TrafficFlow:
 			packet_dest_mac = packet['header']['Ethernet_Destination_MAC']
 			device_name = os.path.splitext(file_name)[0]
 
-			flows = self.__createNewFlow(src_addr, dest_addr, packet_src_mac, packet_dest_mac, device_src_mac, device_name, flows)
+			# Search for existing conversation
+			found = False
+			if len(flows) > 0:
+				for flow in flows:
+					if (flow['Device_A_Addr'] == src_addr) and\
+						(flow['Device_B_Addr'] == dest_addr):
+						found = True
+						if flow['Device_A_Name'] == "" and packet_src_mac == device_src_mac:
+							flow['Device_A_Name'] = device_name
+						flow['packets'].append(packet)
+					elif (flow['Device_B_Addr'] == src_addr) and\
+						(flow['Device_A_Addr'] == dest_addr):
+						found = True
+						if flow['Device_B_Name'] == "" and packet_dest_mac == device_src_mac:
+							flow['Device_B_Name'] = device_name
+						flow['packets'].append(packet)
 
-			flows = self.__addPacketToFlow(packet, src_addr, dest_addr, flows)
+			# Create new conversation if one does not exist
+			if found == False:
+				flows.append(
+					{
+						'Device_A_Addr': src_addr,
+						'Device_A_Name': device_name,
+						'Device_B_Addr': dest_addr,
+						'Device_B_Name': '',
+						'packets': [packet],
+						'conversations': [],
+					}
+				)
 
-		return flows
-
-	"""
-	Create New Flow
-
-	Create a new flow between the two identifiers if one does not currently exist.
-
-	Params:
-	src_addr - a string containing the source IP address
-	dest_addr - a string containing the destination IP address
-	src_mac - the mac address of the source device
-	src_device_name - a string that specifies the name of the source device
-	flows - an array of dictionaries containing the flow information for all devices
-	
-	Returns: an array of dictionaries containing the flow information for all devices
-	"""
-	def __createNewFlow(self, src_addr, dest_addr, src_mac, dest_mac, device_mac, src_device_name, flows):
-		# Search for existing conversation
-		found = False
-		if len(flows) > 0:
-			for flow in flows:
-				if (flow['Device_A_Addr'] == src_addr) and\
-					(flow['Device_B_Addr'] == dest_addr):
-					found = True
-					if flow['Device_A_Name'] == "" and src_mac == device_mac:
-						flow['Device_A_Name'] = src_device_name
-				elif (flow['Device_B_Addr'] == src_addr) and\
-					(flow['Device_A_Addr'] == dest_addr):
-					found = True
-					if flow['Device_B_Name'] == "" and dest_mac == device_mac:
-						flow['Device_B_Name'] = src_device_name
-
-		# Create new conversation if one does not exist
-		if found == False:
-			flows.append(
-				{
-					'Device_A_Addr': src_addr,
-					'Device_A_Name': src_device_name,
-					'Device_B_Addr': dest_addr,
-					'Device_B_Name': '',
-					'packets': [],
-					'conversations': [],
-				}
-			)
-
-		return flows
-
-	"""
-	Add Packet to Flow
-
-	Add the specified packet to the proper flow.
-
-	Params:
-	packet - a dictionary of information about a packet
-	src_addr - a string containing the source IP address specified in the packet
-	dest_addr - a string containing the destination IP address specified in the packet
-	flows - an array of dictionaries containing the flow information
-
-	Returns: an array of dictionaries containing the flows for all devices
-	"""
-	def __addPacketToFlow(self, packet, src_addr, dest_addr, flows):
-		# Add packet to existing flow
-		found = False
-		for flow in flows:
-			if ((flow['Device_A_Addr'] == src_addr) and\
-				(flow['Device_B_Addr'] == dest_addr)) or\
-				((flow['Device_B_Addr'] == src_addr) and\
-				(flow['Device_A_Addr'] == dest_addr)):
-				found = True
-				flow['packets'].append(packet)
-
-		# Create new conversation if one does not exist
-		if found == False:
-			print('ERROR: Flow was not found for packet')
-			exit(-1)
 
 		return flows
