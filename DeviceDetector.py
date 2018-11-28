@@ -13,7 +13,7 @@ if major_python_version != 3:
 
 import os
 from utils.WlanPcapFileParser import WlanPcapFileParser
-#from utils.DeviceTrafficSorter import DeviceTrafficSorter
+from utils.DevicePacketSorter import DevicePacketSorter
 from utils.KNN import KNN
 
 # Check the number of arguments
@@ -56,7 +56,7 @@ else:
 	os.makedirs(json_dir)
 
 	# Create the device specific json files with packets
-	sorter = DeviceTrafficSorter()
+	sorter = DevicePacketSorter()
 	sorter.genDeviceFiles(pcap_dict, json_dir)
 
 # Tell the user to add the labels to the JSON files
