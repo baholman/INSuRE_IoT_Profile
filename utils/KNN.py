@@ -209,11 +209,13 @@ class KNN():
 	"""
 	def __evalKNN(self, eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval):
 		scores = []
+		score_dict = {}
 
 		for label in device_labels:
 			label_array = [label]*packet_count
 			score_label = classifier.score(attributes_eval, label_array)
 			scores.append(label + ' has score = ' + str(score_label))
+			score_dict[label] = str(score_label)
 
 		print('\nThe following is the \"Confusion Matrix\"')
 		print(confusion_matrix(eval_labels, eval_pred)) 
@@ -223,6 +225,20 @@ class KNN():
 		print('\nListed below are the \"scores\" for each device in the training set')
 		for score in scores:
 			print(score)
+		
+		self.__saveScoreToJson(score_dict)
+
+	"""
+	saveScoreToJson
+
+	Saves the scores/accuracy of each label to a json file
+
+	Params:
+	score_dict - a dictionary of each label of devices and their scores
+	"""
+	def __saveScoreToJson(self, score_dict):
+		with open('scores.json', 'w') as outfile:
+			json.dump(score_dict, outfile)
 
 	"""
 	findKValue
