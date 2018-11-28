@@ -9,7 +9,7 @@ Device File Creator
 Converts a python dictionary of the contents of different PCAP files and sorts them based on device.
 It outputs the device files into JSON.
 """
-class DeviceTrafficSorter:
+class DevicePacketSorter:
 	"""
 	Generate the Device Files
 

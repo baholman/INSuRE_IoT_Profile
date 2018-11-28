@@ -85,6 +85,8 @@ class WlanPcapFileParser:
 	def __getHeader(self, packet):
 		result = {}
 
+		# Get the timestamp that the packet was sent at
+		result["time"] = packet.time
 		# Get the type of packet
 		result = self.__getTypeOfPacket(packet, result)
 		# Get the ethernet information from the packet

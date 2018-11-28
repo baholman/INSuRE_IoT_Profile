@@ -9,7 +9,9 @@ if major_python_version != 3:
 
 import os
 from utils.WlanPcapFileParser import WlanPcapFileParser
-from utils.DeviceTrafficSorter import DeviceTrafficSorter
+from utils.DevicePacketSorter import DevicePacketSorter
+from utils.TrafficFlow import TrafficFlow
+from utils.DeviceConversations import DeviceConversations
 from utils.KNN import KNN
 
 # Check the number of arguments
@@ -33,10 +35,10 @@ if not os.path.isdir(experiment_dir):
 
 print("Processing the PCAP files")
 
-# Check if the training pcap files have already been processed
-json_dir =  os.path.join(experiment_dir, 'content_json')
-if os.path.isdir(json_dir):
-	print('The pcap files from this experiment have already been converted to JSON files')
+# Check if the content JSON files have already been created
+content_json_dir =  os.path.join(experiment_dir, 'content_json')
+if os.path.isdir(content_json_dir):
+	print('The pcap files from this experiment have already been converted to content JSON files')
 else:
 	# Get the directory for the pcap files
 	pcap_dir = os.path.join(experiment_dir, 'pcaps')
@@ -47,13 +49,34 @@ else:
 	parser = WlanPcapFileParser()
 	pcap_dict = parser.getJson(pcap_dir)
 
-	# Make a directory for the training output
-	json_dir = os.path.join(experiment_dir, 'content_json')
-	os.makedirs(json_dir)
+	# Make the content json directory
+	os.makedirs(content_json_dir)
 
 	# Create the device specific json files with packets
-	sorter = DeviceTrafficSorter()
-	sorter.genDeviceFiles(pcap_dict, json_dir)
+	sorter = DevicePacketSorter()
+	sorter.genDeviceFiles(pcap_dict, content_json_dir)
+
+print("Determining the time flows of the content JSON files")
+
+# Check if the traffic JSON files have already been created
+flow_json_dir =  os.path.join(experiment_dir, 'flow_json')
+if os.path.isdir(flow_json_dir):
+	print('The pcap files from this experiment have already been converted to flow JSON files')
+else:
+	# Create the dictionary of packet information split by pcap file
+	flowGenerator = TrafficFlow()
+	flow_dict = flowGenerator.getTrafficFlows(content_json_dir)
+	
+	if flow_dict == []:
+		print("ERROR: Empty flow dictionary")
+		exit(-1)
+
+	# Make a directory for the training output
+	os.makedirs(flow_json_dir)
+
+	# Create the device specific json files with packets
+	convCollector = DeviceConversations()
+	convCollector.getConversations(flow_dict, flow_json_dir, 5000)
 
 # Tell the user to add the labels to the JSON files
 print(('You need to do the following before continuing:\n'
