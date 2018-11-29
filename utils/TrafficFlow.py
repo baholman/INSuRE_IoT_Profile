@@ -33,7 +33,7 @@ class TrafficFlow:
 			src_mac = input_json['identifiers']['Ethernet_Source_MAC']
 
 			# Get the flows for the device
-			output = self.__getDeviceFlows(packets, src_mac, file_name, output)
+			output.append({"file_name": file_name, "flows": self.__getDeviceFlows(packets, src_mac, file_name)})
 
 		return output
 
@@ -47,11 +47,12 @@ class TrafficFlow:
 	packets - a list of all the packets from the device JSON file
 	device_src_mac - a string containing the MAC address of the device
 	file_name - a string containing the name of the device file
-	all_flows - an array of all flows between devices
 
 	Returns: an array of dictionaries containing the flow information
 	"""
-	def __getDeviceFlows(self, packets, device_src_mac, file_name, flows):
+	def __getDeviceFlows(self, packets, device_src_mac, file_name):
+		flows = []
+
 		for packet in packets:
 			# Ignore the packet if it doesn't have source and destination IP addresses
 			if 'IP_Source_Address' not in packet['header'].keys() or 'IP_Destination_Address' not in packet['header'].keys():
