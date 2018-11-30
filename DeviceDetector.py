@@ -42,17 +42,26 @@ if not os.path.isdir(experiment_dir):
 
 print("Processing the PCAP files")
 
-# Get the directory for the pcap files
-pcap_dir = os.path.join(experiment_dir, 'pcaps')
-if not os.path.isdir(pcap_dir):
-	print('ERROR: The pcap directory provided does not exist')
+devices_identifiers = []
 
-for pcap_file in pcap_dir:
-	# Check if the content JSON files have already been created
-	content_json_dir =  os.path.join(experiment_dir, 'content_json')
-	if os.path.isdir(content_json_dir):
-		print('The pcap files from this experiment have already been converted to content JSON files')
-	else:
+# Check if the content JSON files have already been created
+flow_json_dir =  os.path.join(experiment_dir, 'flow_json')
+if os.path.isdir(flow_json_dir):
+	print('The pcap files from this experiment have already been converted to flow JSON files')
+	for flow_file in os.path.listdir(flow_json_dir):
+		flow_info_file = open(os.path.join(flow_json_dir, flow_file))
+		flow_info = json.loads(flow_info_file)
+else:
+	print('The pcap files for this experiment are being converted to flow JSON files')
+	# Make the content_json directory
+	os.makdirs(content_json_dir)
+
+	# Get the directory for the pcap files
+	pcap_dir = os.path.join(experiment_dir, 'pcaps')
+	if not os.path.isdir(pcap_dir):
+		print('ERROR: The pcap directory provided does not exist')
+
+	for pcap_file in pcap_dir:
 		# Create the dictionary of packet information split by pcap file
 		parser = WlanPcapFileParser()
 		pcap_dict = parser.getJson(pcap_dir)
@@ -77,11 +86,26 @@ for pcap_file in pcap_dir:
 			packet_dict['body'] = self.__getBody(packet)
 			file_dict['packets'].append(packet_dict)
 
-		os.makedirs(content_json_dir)
+			if len(device_identifiers) == 0:
+				# Add device to list of devices
+				device_identifiers.append({
+					"name": "device_0",
+					"Ethernet_Source_MAC": packet_dict['header']['Ethernet_Source_MAC'],
+					"IP_Source_Address": packet_dict['header']['IP_Source_Address']
+					})
+			else:
+				found = False
+				# Determine if the device already exists
+				for device in device_identifiers:
+					if device['Ethernet_Source_MAC'] == packet_dict['header']['Ethernet_Source_MAC']:
+						found = True
 
-		# Create the device specific json files with packets
-		sorter = DevicePacketSorter()
-		sorter.genDeviceFiles(pcap_dict, content_json_dir)
+						flow
+
+
+	# Create the device specific json files with packets
+	sorter = DevicePacketSorter()
+	sorter.genDeviceFiles(pcap_dict, content_json_dir)
 
 	print("Determining the time flows of the content JSON files")
 
