@@ -4,74 +4,8 @@ import pcapy as p
 from scapy.all import rdpcap, Ether, ARP, IP, TCP, UDP, ICMP, DNS, Raw
 import re
 
-"""
-WlanPcapFileParser
-
-Convert pcap file to json from WLAN
-"""
-class WlanPcapFileParser:
+class PcapParserHelper:
 	
-	"""
-	getJson
-
-	Converts directory of PCAP files to dictionary of strings with packet contents.
-
-	Params: 
-	pcap_dir - String that is path to PCAP directory
-
-	Return: An array of dictionaries that contain file content
-	"""
-	def getJson(self, pcap_dir):
-		result = []
-		
-		for file_name in os.listdir(pcap_dir):
-			# Initalize file dictionary
-			file_dict = {}
-			file_dict['file_path'] = file_name
-			file_dict['protocol'] = 'WLAN'
-			file_dict['identifiers'] = ['Ethernet_Source_MAC']
-			file_dict['packets'] = []
-
-			# Get file contents
-			packets = self.__parseBinary(file_name, pcap_dir)
-
-			# Get packet info
-			for packet in packets:
-				packet_dict = {}
-				packet_dict['header'] = self.__getHeader(packet)
-				packet_dict['body'] = self.__getBody(packet)
-				file_dict['packets'].append(packet_dict)
-
-			result.append(file_dict)
-
-		return result
-
-
-	"""
-	parseBinary
-
-	Parses binary to text.
-
-	Params: 
-	input_filename - file name of the input file
-
-	Return: An array of packet objects
-	"""
-	def __parseBinary(self, input_filename, pcap_dir):
-		pcap_string = ''
-		input_filename_base = os.path.splitext(os.path.basename(input_filename))[0]
-		print('Input File Name: ' + input_filename_base)
-
-		# Set the parent directory of the PCAP file to the current directory if the full path is not specified
-		if ((pcap_dir[0] != '/') or (pcap_dir[0] != '~')):
-			pcap_parent_dir = os.getcwd()
-		else:
-			pcap_parent_dir = ''
-		# Set up the input file path
-		pcap_path = os.path.join(pcap_parent_dir, pcap_dir, input_filename_base + '.pcap')
-
-		return rdpcap(pcap_path)
-
 	"""
 	getHeader
 
@@ -82,7 +16,7 @@ class WlanPcapFileParser:
 
 	Return: Dictionary of header fields
 	"""
-	def __getHeader(self, packet):
+	def getHeader(self, packet):
 		result = {}
 
 		# Get the timestamp that the packet was sent at
@@ -361,7 +295,7 @@ class WlanPcapFileParser:
 
 	Return: Dictionary of body contents
 	"""
-	def __getBody(self, packet):
+	def getBody(self, packet):
 		result = {}
 		
 		if packet.haslayer(Raw):
