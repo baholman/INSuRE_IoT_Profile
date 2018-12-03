@@ -20,12 +20,12 @@ class PcapParserHelper:
 		device_file = open(path, "a")
 
 		# Get the timestamp that the packet was sent at
-		device_file.write("			Packet_Timestamp: '" + packet.time + "',")
+		device_file.write("			Packet_Timestamp: '" + str(packet.time) + "',")
 		
 		# Get the type of packet
 		#print(self.__getTypeOfPacket(packet))
 		protocol = self.__getTypeOfPacket(packet)
-		device_file.write("			Packet_Type: '" + protocol + "',")
+		device_file.write("			Packet_Type: '" + str(protocol) + "',")
 
 		# Get packet length
 		if packet.haslayer(IP):
@@ -39,27 +39,26 @@ class PcapParserHelper:
 
 		# Get the ethernet information from the packet
 		if packet.haslayer(Ether):
-			result = self.__getEtherHeader(packet, result)
+			self.__getEtherHeader(packet, path, verbose)
 		#Get thr ARP information from the packet
 		if packet.haslayer(ARP):
-			result = self.__getArpHeader(packet, result)
+			self.__getArpHeader(packet, path, verbose)
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
-			result = self.__getIpHeader(packet, result)
+			self.__getIpHeader(packet, path, verbose)
 		# Get the TCP information from the packet
 		if packet.haslayer(TCP):
-			result = self.__getTcpHeader(packet, result)
+			self.__getTcpHeader(packet, path, verbose)
 		# Get the UDP information from the packet
 		if packet.haslayer(UDP):
-			result = self.__getUdpHeader(packet, result)
+			self.__getUdpHeader(packet, path, verbose)
 		# Get the ICMP information from the packet
 		if packet.haslayer(ICMP):
-			result = self.__getIcmpHeader(packet, result)
+			self.__getIcmpHeader(packet, path, verbose)
 		# Get the DNS information from the packet
 		if packet.haslayer(DNS):
-			result = self.__getDnsHeader(packet, result)
+			self.__getDnsHeader(packet, path, verbose)
 
-		return result
 
 	"""
 	getTypeOfPacket

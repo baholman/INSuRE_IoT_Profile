@@ -21,7 +21,7 @@ import pcapy as p
 from scapy.all import rdpcap, Ether, ARP, IP, TCP, UDP, ICMP, DNS, Raw
 import re
 
-devices_identifiers = []
+device_identifiers = []
 
 def getDeviceFileName(packet):
 	found = False
@@ -73,6 +73,7 @@ if not os.path.isdir(experiment_dir):
 print("Processing the PCAP files")
 
 devices_identifiers = []
+verbose = True
 
 # Check if the content JSON files have already been created
 content_json_dir = os.path.join(experiment_dir, 'content_json')
@@ -91,7 +92,7 @@ else:
 	if not os.path.isdir(pcap_dir):
 		print('ERROR: The pcap directory provided does not exist')
 
-	for pcap_file in pcap_dir:
+	for pcap_file in os.listdir(pcap_dir):
 		# Create the dictionary of packet information split by pcap file
 		parser = PcapParserHelper()
 		#pcap_dict = parser.getJson(pcap_dir)
@@ -107,8 +108,14 @@ else:
 		#print('Input File Name: ' + input_filename_base)
 
 		# Set up the input file path
+		print("PCAP file: " + pcap_file)
 		pcap_path = os.path.join(pcap_dir, pcap_file)
 		print("PCAP path: " + pcap_path)
+
+		# Check if file exists
+		if not os.path.isfile(pcap_path):
+			print("PCAP was not a file")
+			continue
 
 		# Get packet info
 		for packet in rdpcap(pcap_path):
@@ -117,11 +124,11 @@ else:
 			device_content_path = os.path.join(content_json_dir, device_name + ".json")
 
 			# See if the file already exists
-			if os.path.isfile(device_path):
-				device_file = open(device_path, "a")
+			if os.path.isfile(device_content_path):
+				device_file = open(device_content_path, "a")
 			else:
 				# Add header to device file
-				device_file = open(device_path, "w")
+				device_file = open(device_content_path, "w")
 				device_file.write("{")
 				device_file.write("	name: '" + device_name + "',")
 				device_file.write("	protocol: 'WLAN',")
@@ -133,16 +140,19 @@ else:
 			device_file.write("		{")
 			device_file.close()
 
-			header = self.__getHeader(packet, device_path, verbose)
-			body = self.__getBody(packet, device_path, verbose)
+			parser.getHeader(packet, device_content_path, verbose)
+			parser.getBody(packet, device_content_path, verbose)
 
-			device_file = open(device_path, "a")
+			device_file = open(device_content_path, "a")
 			device_file.write("		}")
 			device_file.close()
 
 			# Get path for the file of the device that this packet is associated with
-			ip_src = header["IP_Source_Address"]
-			ip_dest = header["IP_Destination_Address"]
+			ip_src = ""
+			ip_dest = ""
+			if packet.haslayer(IP):
+				ip_src = str(packet[IP].src)
+				ip_dest = str(packet[IP].dst)
 			device_flow_dir = os.path.join(flow_json_dir, device_name)
 			device_flow_path = ""
 			for filename in os.listdir(device_flow_path):
