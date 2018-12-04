@@ -13,8 +13,6 @@ if major_python_version != 3:
 
 import os
 from utils.PcapParserHelper import PcapParserHelper
-#from utils.DevicePacketSorter import DevicePacketSorter
-#from utils.TrafficFlow import TrafficFlow
 #from utils.DeviceConversations import DeviceConversations
 #from utils.KNN import KNN
 import pcapy as p
@@ -45,16 +43,49 @@ def getDeviceFileName(packet):
 	# Add new device to list
 	new_device_name = "device_" + str(len(device_identifiers))
 	device_identifiers.append({
-		"name": "device_" + new_device_name,
+		"name": new_device_name,
 		"Ethernet_Source_MAC": src_mac,
 		"IP_Source_Address": src_ip
 	})
+
 	return new_device_name
 
+def getFlowFilePath(packet, flow_json_dir, device_name):
+	# Get packet information for filename
+	ip_src = ""
+	ip_dest = ""
+	if packet.haslayer(IP):
+		ip_src = str(packet[IP].src)
+		ip_dest = str(packet[IP].dst)
+	
+	# Determine if device directory exists
+	device_flow_dir = os.path.join(flow_json_dir, device_name)
+	if not os.path.exists(device_flow_dir):
+		os.makedirs(device_flow_dir)
+
+	# Get filename if it is an existing file
+	device_flow_path = ""
+	for filename in os.listdir(device_flow_dir):
+		if	(filename == ip_src + "-" + ip_dest + ".json") or\
+			(filename == ip_dest + "-" + ip_src + ".json"):
+			return os.path.join(device_flow_dir, filename)
+
+	# Make new file if a file doesn't exist for the flow
+	device_flow_path = os.path.join(device_flow_dir, ip_src + "-" + ip_dest + ".json")
+	device_flow_file = open(device_flow_path, "w")
+	device_flow_file.write("{\n")
+	device_flow_file.write("	src_ip: '" + ip_src + "',\n")
+	device_flow_file.write("	src_name: '" + device_name + "',\n")
+	device_flow_file.write("	dest_ip: '" + ip_dest + "',\n")
+	device_flow_file.write("	dest_name: '',\n")
+	device_flow_file.write("	packets: [\n")
+	device_flow_file.close()
+	return device_flow_path
+
 # Check the number of arguments
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
 	print('ERROR: Incorrect number of arguments provided')
-	print('python3 DeviceDetector.py <experiment_directory>')
+	print('python3 DeviceDetector.py <experiment_directory> <verbose>')
 	exit(-1)
 
 # Get the experiment directory
@@ -70,47 +101,32 @@ if not os.path.isdir(experiment_dir):
 	print('ERROR: The experiment directory provided does not exist')
 	exit(-1)
 
+verbose = sys.argv[2]
+
 print("Processing the PCAP files")
 
 devices_identifiers = []
-verbose = True
 
 # Check if the content JSON files have already been created
-content_json_dir = os.path.join(experiment_dir, 'content_json')
 flow_json_dir =  os.path.join(experiment_dir, 'flow_json')
-if os.path.isdir(content_json_dir) and os.path.isdir(flow_json_dir):
+if os.path.isdir(flow_json_dir):
 	print('The pcap files from this experiment have already been converted to flow JSON files')
 else:
 	print('The pcap files for this experiment are being converted to flow JSON files')
 	# Make the content_json directory
-	os.makedirs(content_json_dir)
 	os.makedirs(flow_json_dir)
 
 	# Get the directory for the pcap files
 	pcap_dir = os.path.join(experiment_dir, 'pcaps')
-	print("PCAP dir: " + pcap_dir)
 	if not os.path.isdir(pcap_dir):
 		print('ERROR: The pcap directory provided does not exist')
 
 	for pcap_file in os.listdir(pcap_dir):
 		# Create the dictionary of packet information split by pcap file
 		parser = PcapParserHelper()
-		#pcap_dict = parser.getJson(pcap_dir)
-
-		#file_dict = {}
-		#file_dict['file_path'] = file_name
-		#file_dict['protocol'] = 'WLAN'
-		#file_dict['identifiers'] = ['Ethernet_Source_MAC']
-		#file_dict['packets'] = []
-																				
-		# Get file contents
-		#input_filename_base = os.path.splitext(os.path.basename(input_filename))[0]
-		#print('Input File Name: ' + input_filename_base)
 
 		# Set up the input file path
-		print("PCAP file: " + pcap_file)
 		pcap_path = os.path.join(pcap_dir, pcap_file)
-		print("PCAP path: " + pcap_path)
 
 		# Check if file exists
 		if not os.path.isfile(pcap_path):
@@ -121,86 +137,29 @@ else:
 		for packet in rdpcap(pcap_path):
 			# Get path for the file of the device that this packet is associated with
 			device_name = getDeviceFileName(packet)
-			device_content_path = os.path.join(content_json_dir, device_name + ".json")
 
-			# See if the file already exists
-			if os.path.isfile(device_content_path):
-				device_file = open(device_content_path, "a")
-			else:
-				# Add header to device file
-				device_file = open(device_content_path, "w")
-				device_file.write("{")
-				device_file.write("	name: '" + device_name + "',")
-				device_file.write("	protocol: 'WLAN',")
-				device_file.write("	identifiers: ['Ethernet_Source_MAC'],")
-				device_file.write("	packets: [")
-
-			
-			# Get packet attributes
-			device_file.write("		{")
-			device_file.close()
-
-			parser.getHeader(packet, device_content_path, verbose)
-			parser.getBody(packet, device_content_path, verbose)
-
-			device_file = open(device_content_path, "a")
-			device_file.write("		}")
-			device_file.close()
-
-			# Get path for the file of the device that this packet is associated with
-			ip_src = ""
-			ip_dest = ""
-			if packet.haslayer(IP):
-				ip_src = str(packet[IP].src)
-				ip_dest = str(packet[IP].dst)
-			device_flow_dir = os.path.join(flow_json_dir, device_name)
-			device_flow_path = ""
-			for filename in os.listdir(device_flow_path):
-				if	(filename == ip_src + "-" + ip_dest + ".json") or\
-					(filename == ip_dest + "-" + ip_src + ".json"):
-					device_flow_path = os.path.join(device_flow_dir, filename)
-				else:
-					device_flow_path = os.path.join(device_flow_dir, header["IP_Source_Address"] + "-" + header["IP_Destination_Address"] + ".json")
-					device_flow_file = open(device_flow_path, "w")
-					device_flow_file.write("{")
-					device_flow_file.write("	src_ip: '" + ip_src + "',")
-					device_flow_file.write("	src_name: '" + device_name + "',")
-					device_flow_file.write("	dest_ip: '" + ip_dest + "',")
-					device_flow_file.write("	dest_name: '',")
-					device_flow_file.write("	packets: [")
-					device_flow_file.close()
-
+			device_flow_path = getFlowFilePath(packet, flow_json_dir, device_name)
 			device_flow_file = open(device_flow_path, "a")
-			device_flow_file.write("		{")
+			device_flow_file.write("		{\n")
 			device_flow_file.close()
 
 			# Get packet attributes
-			header = self.__getHeader(packet, device_flow_path, False)
-			body = self.__getBody(packet, device_flow_path, False)
+			parser.getHeader(packet, device_flow_path, verbose)
+			#body = self.__getBody(packet, device_flow_path, verbose)
 
 			device_flow_file = open(device_flow_path, "a")
-			device_flow_file.write("		}")
+			device_flow_file.write("		},\n")
 			device_flow_file.close()
-
-	# Close all the device files
-	for device in device_identifiers:
-		device_name = device["name"]
-		device_path = os.path.join(flow_json_dir, device_name + ".json")
-		
-		device_file = open(device_path, "a")
-		device_file.write("	}")
-		device_file.write("}")
-		device_file.close()
 
 	# Close all the flow files
-	for dirname in os.list.dir(flow_json_dir):
-		if os.path.isdir(dirname):
-			device_flow_path = os.path.join(flow_json_dir, dirname)
+	for dirname in os.listdir(flow_json_dir):
+		device_flow_path = os.path.join(flow_json_dir, dirname)
+		if os.path.isdir(device_flow_path):
 			for filename in os.listdir(device_flow_path):
 				device_flow_file_path = os.path.join(device_flow_path, filename)
 				flow_file = open(device_flow_file_path, "a")
-				flow_file.write("	]")
-				flow_file.write("}")
+				flow_file.write("	]\n")
+				flow_file.write("}\n")
 				flow_file.close()
 		else:
 			print("Unexpected file found in " + flow_json_dir + " called " + dirname)	
