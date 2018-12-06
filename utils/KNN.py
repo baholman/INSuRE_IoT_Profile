@@ -16,68 +16,7 @@ K-Nearest Neighbor
 Implements K-Nearest Neighbor approach to machine learning
 """
 class KNN():
-	"""
-	isDir
-
-	Checks to see if the string provided is a directory. Otherwise, it throws an error
-
-	Params:
-	exp_dir - name of the experimental directory as a string
-	features_file_name - a string containing the name of the features file to use
-	"""
-	def isDir(self, exp_dir, features_file_name):
-		# Check if the experiment directory exists
-		if (not os.path.isdir(exp_dir)):
-			print('Error: directory \"' + exp_dir + '\" does not exists')
-			return
-		
-		self.__parseFeaturesFromJson(exp_dir, features_file_name)
-
-
-	"""
-	parseFeaturesFromJson
-
-	Parses a JSON file which holds the features to implement KNN with
-
-	Params:
-	exp_dir - name of the experimental directory as a string
-	feature_json - name of json file as string (default is features.json)
-	"""
-	def __parseFeaturesFromJson(self, exp_dir, features_file_name = 'time_flow_features.json'):
-		json_file_path = os.path.join(exp_dir, features_file_name)
-		if (not os.path.exists(json_file_path)):
-			print('Error: JSON file \"' + json_file_path + '\" does not exists')
-			return
-		
-		with open(json_file_path) as json_file:
-			json_data = json.load(json_file)
-		
-		self.__getKNNFeatures(exp_dir, json_data)
-
-	"""
-	getKNNFeatures
-
-	Gets the attributes from the features.json and calls the other functions in the KNN algorithm
-
-	Params:
-	exp_dir - experiment directory
-	json_data - features to exract and use in KNN algorithm
-	"""
-	def __getKNNFeatures(self, exp_dir, json_data):
-		# Get the list of features?
-		features = []
-		for key in json_data.keys():
-			for value in json_data[key]:
-				features.append(value)
-		
-		# Get the directories with the training and evaluation JSON files
-		json_training_path = os.path.join(exp_dir, 'training_json')
-		json_eval_path = os.path.join(exp_dir, 'eval_json')
-
-		# Get the arrays of attributes for the different types of data
-		attributes_training, training_labels, device_labels = self.__getAttributesFromJsonFiles(json_training_path, features, "training")
-		attributes_eval, eval_labels, device_label_forEval = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")	
-
+	def runKNN(self, attributes_training, training_labels, attributes_eval, eval_labels, all_device_labels):
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
 			print('ERROR: No training attributes provided')
@@ -90,12 +29,10 @@ class KNN():
 		
 		# Gets number of packets in evaluation set
 		packet_count = len(eval_labels)
-		# Removes duplicate labels from list
-		device_labels = list(set(device_labels))
 
 		self.__scaleFeatures(attributes_training, attributes_eval)
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
-		self.__evalKNN(eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval)
+		self.__evalKNN(eval_pred, eval_labels, classifier, all_device_labels, packet_count, attributes_eval)
 		#Uncomment code to find K value graph
 		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels)
 

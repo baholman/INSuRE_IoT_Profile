@@ -13,8 +13,7 @@ if major_python_version != 3:
 
 import os
 from utils.PcapParserHelper import PcapParserHelper
-#from utils.DeviceConversations import DeviceConversations
-#from utils.KNN import KNN
+from utils.KNN import KNN
 import pcapy as p
 from scapy.all import rdpcap, Ether, ARP, IP, TCP, UDP, ICMP, DNS, Raw
 import re
@@ -90,7 +89,6 @@ def getFlowFilePath(packet, flow_json_dir, device_name):
 def getConversationAttributesForFlow(flow_file_name):
 	# Get the contents of the flow file
 	flow_file_path = os.path.join(device_dir_path, flow_file_name)
-	print("Path: " + flow_file_path)
 	flow_file = open(flow_file_path, "r")
 	start_reading_packets = False
 	row = 0
@@ -289,7 +287,7 @@ def getConversationAttributesForFlow(flow_file_name):
 				conv_stats.append(0)
 
 			# Add the average packet length
-			conv_stats.append(conv["total_packet_length"] / conv["num_packets_total"])
+			conv_stats.append(float(conv["total_packet_length"]) / float(conv["num_packets_total"]))
 			# Add number of packets sent
 			conv_stats.append(conv["num_packets_sent"])
 
@@ -304,9 +302,7 @@ def getConversationAttributesForFlow(flow_file_name):
 
 			# Add the information from the current conversation to the list of information about the conversations for this flow
 			conversation_attributes.append(conv_stats)
-			print(conversation_attributes)
-			print("test")
-
+			
 			# Reset everything
 			conv_stats = []
 
@@ -337,6 +333,8 @@ def getConversationAttributesForFlow(flow_file_name):
 				conv["num_packets_sent_to_out_network_devices"] += 1
 		else:
 			conv = conversations[ptype]
+
+			conv["last_packet_timestamp"] = packet["Packet_Timestamp"]
 			
 			# Update the number of packets
 			conv["num_packets"] += 1
@@ -468,19 +466,25 @@ if not os.path.exists(training_json_dir) or not os.path.exists(eval_json_dir):
 import csv
 
 ip_labels = []
+unique_labels = []
 labels_path = os.path.join(experiment_dir, 'device_labels.csv')
 
 line_count = 0
 labels_file = csv.reader(open(labels_path, newline='\r'), delimiter=',', quotechar='|')
 for row in labels_file:
 	if line_count > 0 and len(row) > 0:
+		# Add the current entry to the list of IP labels
 		ip_labels.append({
 			"IP": row[0],
 			"Label": row[1],
 		})
+
+		# Add the device label to the list of unique labels if it isn't already present
+		if row[1] not in unique_labels:
+			unique_labels.append(row[1])
 	line_count += 1
 
-print("TRAINING")
+print("Processing the training data")
 
 # Load in all the flow information for the devices in the training set
 training_data = []
@@ -493,25 +497,29 @@ for device_dir in os.listdir(training_json_dir):
 	if os.path.isdir(device_dir_path):
 		# Get the conversation for the flow
 		for flow_file_name in os.listdir(device_dir_path):
+			# Get the label for the device based on the source IP on the file
 			src_ip = ""
 			flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
 			if len(flowRe) > 0:
 				flowElems = flowRe[0].groupdict()
 				src_ip = flowElems["src_ip"]
+	
+			label = "Unknown"
+			for iplabel in ip_labels:
+				if iplabel["IP"] == src_ip:
+					label = iplabel["Label"] 
+
 			ca = getConversationAttributesForFlow(flow_file_name)
-			print(ca)
 			num_conv_attributes = len(conversation_attributes)
 			num_ca = len(ca)
-			conversation_attributes[num_conv_attributes:num_conv_attributes + num_ca] = ca
-			conversation_labels[num_conv_attributes:num_conv_attributes + num_ca] = [src_ip] * num_ca
-	print(conversation_attributes)
-	print(conversation_labels)
+			conversation_attributes += ca
+			conversation_labels += [label] * num_ca
+	training_data += conversation_attributes
+	training_labels += conversation_labels
 
-print("EVAL")
+print("Processing the evaluation data")
 
 # Load in the flow information for the devices in the eval set
-eval_data = []
-eval_labels = []
 for device_dir in os.listdir(eval_json_dir):
 	conversation_attributes = []
 	conversation_labels = []
@@ -520,47 +528,28 @@ for device_dir in os.listdir(eval_json_dir):
 	if os.path.isdir(device_dir_path):
 		# Get the conversation for the flow
 		for flow_file_name in os.listdir(device_dir_path):
+			# Get the label for the device based on the source IP on the file
 			src_ip = ""
 			flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
 			if len(flowRe) > 0:
 				flowElems = flowRe[0].groupdict()
 				src_ip = flowElems["src_ip"]
+
+
+			label = "Unknown"
+			for iplabel in ip_labels:
+				if iplabel["IP"] == src_ip:
+					label = iplabel["Label"]
+
 			ca = getConversationAttributesForFlow(flow_file_name)
 			#print(ca)
 			num_conv_attributes = len(conversation_attributes)
 			num_ca = len(ca)
-			conversation_attributes[num_conv_attributes:num_conv_attributes + num_ca] = ca
-			conversation_labels[num_conv_attributes:num_conv_attributes + num_ca] = [src_ip] * num_ca
-	print(conversation_attributes)
-	print(conversation_labels)
+			conversation_attributes += ca
+			conversation_labels += [label] * num_ca
 
+	print("Starting to run KNN for device " + device_dir)
+	# Run the KNN analysis per evaluation device
+	k = KNN()
+	k.runKNN(training_data, training_labels, conversation_attributes, conversation_labels, unique_labels)
 
-
-
-
-"""
-	# Check if the traffic JSON files have already been created
-	flow_json_dir =  os.path.join(experiment_dir, 'flow_json')
-	if os.path.isdir(flow_json_dir):
-		print('The pcap files from this experiment have already been converted to flow JSON files')
-	else:
-		# Create the dictionary of packet information split by pcap file
-		flowGenerator = TrafficFlow()
-		flow_dict = flowGenerator.getTrafficFlows(content_json_dir)
-	
-		if flow_dict == []:
-			print("ERROR: Empty flow dictionary")
-			exit(-1)
-
-		# Make a directory for the training output
-		os.makedirs(flow_json_dir)
-
-		# Create the device specific json files with packets
-		convCollector = DeviceConversations()
-		convCollector.getConversations(flow_dict, flow_json_dir, 5000)
-
-# Run the data through the K-Nearest Neighbor algorithm
-print("Running the KNN algorithm")
-knn = KNN()
-knn.isDir(experiment_dir, 'content_features.json')
-"""
