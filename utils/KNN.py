@@ -76,7 +76,9 @@ class KNN():
 
 		# Get the arrays of attributes for the different types of data
 		attributes_training, training_labels, device_labels = self.__getAttributesFromJsonFiles(json_training_path, features, "training")
-		attributes_eval, eval_labels, device_label_forEval = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")	
+		attributes_eval, eval_labels, device_label_forEval = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")
+
+		#attributes_training, training_labels = self.__overSampleSmote(attributes_training, training_labels)
 
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
@@ -96,7 +98,7 @@ class KNN():
 		self.__scaleFeatures(attributes_training, attributes_eval)
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
 		self.__evalKNN(eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval)
-		#Uncomment code to find K value graph
+		# Uncomment code to find K value graph
 		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels)
 
 	"""
@@ -158,7 +160,20 @@ class KNN():
 				attributes.append(packet_attributes)
 
 		return attributes, device_labels, device_all_labels
-
+	"""
+	def __overSampleSmote(self, attributes, labels):
+		X = []
+		for attribute in range(len(attributes)):
+			at = []
+			for i in range(len(attributes[attribute])):
+				at.append(float(attributes[attribute][i]))
+			X.append(at)
+		attributes = X
+		print(attributes)
+		sm = SMOTE(k_neighbors = 1)
+		attributes, labels = sm.fit_sample(attributes, labels)
+		return attributes, labels
+	"""
 	"""
 	scaleFeatures
 
@@ -226,6 +241,10 @@ class KNN():
 		for score in scores:
 			print(score)
 		
+		print(eval_labels)
+		print('\n')
+		print(eval_pred)
+
 		self.__saveScoreToJson(score_dict)
 
 	"""
