@@ -542,4 +542,3 @@ for device_dir in os.listdir(eval_json_dir):
 	# Run the KNN analysis per evaluation device
 	k = KNN()
 	k.runKNN(training_data, training_labels, conversation_attributes, conversation_labels, unique_labels)
-
