@@ -16,7 +16,7 @@ K-Nearest Neighbor
 Implements K-Nearest Neighbor approach to machine learning
 """
 class KNN():
-	def runKNN(self, attributes_training, training_labels, attributes_eval, eval_labels, all_device_labels):
+	def runKNN(self, attributes_training, training_labels, attributes_eval, eval_labels, all_device_labels, exp_dir):
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
 			print('ERROR: No training attributes provided')
@@ -32,10 +32,25 @@ class KNN():
 
 		self.__scaleFeatures(attributes_training, attributes_eval)
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
-		self.__evalKNN(eval_pred, eval_labels, classifier, all_device_labels, packet_count, attributes_eval)
-		#Uncomment code to find K value graph
-		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels)
+		highest_score_label = self.__evalKNN(eval_pred, eval_labels, classifier, all_device_labels, packet_count, attributes_eval, exp_dir)
+		# Uncomment code to find K value graph
+		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels, exp_dir)
+		return highest_score_label
 
+	def __breakFlow(self, eval_flow_attributes, trainging_flow_attributes):
+		numPackets = len(eval_flow_attributes['packets'])
+		training_packets_number = int(numPackets / 80)
+		eval_packets_number = int(numPackets / 20)
+		training_packets = []
+		eval_packets = []
+		for packetNum in range(training_packets_number):
+			training_packets.append(eval_flow_attributes['packets'][packetNum])
+		for packetNum in  range(eval_packets_number):
+			eval_packets.append(eval_flow_attributes['packets'][training_packets_number + packetNum])
+		trainging_flow_attributes.append(training_packets)
+		eval_flow_attributes.clear()
+		eval_flow_attributes.append(eval_packets)
+		return trainging_flow_attributes, eval_flow_attributes
 	"""
 	scaleFeatures
 
@@ -84,9 +99,11 @@ class KNN():
 	packet_count - number of packets
 	attributes_eval - attributes from evaluation set
 	"""
-	def __evalKNN(self, eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval):
+	def __evalKNN(self, eval_pred, eval_labels, classifier, device_labels, packet_count, attributes_eval, exp_dir):
 		scores = []
 		score_dict = {}
+		highest_score_label = 'Unknown'
+		highest_score = -1.0
 
 		for label in device_labels:
 			label_array = [label]*packet_count
@@ -103,7 +120,14 @@ class KNN():
 		for score in scores:
 			print(score)
 		
-		self.__saveScoreToJson(score_dict)
+		for label in score_dict:
+			if(float(score_dict[label]) > highest_score):
+				highest_score_label = label
+				highest_score = float(score_dict[label])
+
+		self.__saveScoreToJson(score_dict, exp_dir)
+
+		return highest_score_label
 
 	"""
 	saveScoreToJson
@@ -113,8 +137,9 @@ class KNN():
 	Params:
 	score_dict - a dictionary of each label of devices and their scores
 	"""
-	def __saveScoreToJson(self, score_dict):
-		with open('scores.json', 'w') as outfile:
+	def __saveScoreToJson(self, score_dict, exp_dir):
+		scores_path = os.path.join(exp_dir, 'scores.json')
+		with open(scores_path, 'w') as outfile:
 			json.dump(score_dict, outfile)
 
 	"""
@@ -130,7 +155,7 @@ class KNN():
 	training labels - the labels of the devices from the training set
 	eval_labels - the labels of the devices from the eval set
 	"""
-	def __findKValue(self, attributes_training, attributes_eval, training_labels, eval_labels):
+	def __findKValue(self, attributes_training, attributes_eval, training_labels, eval_labels, exp_dir):
 		error = []
 		# Calculating error for K values between 1 and 40
 		for i in range(1, 40):  
@@ -146,7 +171,8 @@ class KNN():
 		plt.title('Error Rate K Value')
 		plt.xlabel('K Value')
 		plt.ylabel('Mean Error')
-		plt.savefig('kGraph.png')
-		os.system('feh kGraph.png')
+		graphPath = os.path.join(exp_dir,'kGraph.png')
+		plt.savefig(graphPath)
+		os.system('feh ' + graphPath)
 
 
