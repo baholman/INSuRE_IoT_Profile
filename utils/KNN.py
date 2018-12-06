@@ -78,8 +78,6 @@ class KNN():
 		attributes_training, training_labels, device_labels = self.__getAttributesFromJsonFiles(json_training_path, features, "training")
 		attributes_eval, eval_labels, device_label_forEval = self.__getAttributesFromJsonFiles(json_eval_path, features, "eval")
 
-		#attributes_training, training_labels = self.__overSampleSmote(attributes_training, training_labels)
-
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
 			print('ERROR: No training attributes provided')
@@ -160,20 +158,7 @@ class KNN():
 				attributes.append(packet_attributes)
 
 		return attributes, device_labels, device_all_labels
-	"""
-	def __overSampleSmote(self, attributes, labels):
-		X = []
-		for attribute in range(len(attributes)):
-			at = []
-			for i in range(len(attributes[attribute])):
-				at.append(float(attributes[attribute][i]))
-			X.append(at)
-		attributes = X
-		print(attributes)
-		sm = SMOTE(k_neighbors = 1)
-		attributes, labels = sm.fit_sample(attributes, labels)
-		return attributes, labels
-	"""
+
 	"""
 	scaleFeatures
 
