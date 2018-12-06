@@ -19,8 +19,10 @@ import pcapy as p
 from scapy.all import rdpcap, Ether, ARP, IP, TCP, UDP, ICMP, DNS, Raw
 import re
 import json
+import sys
 
 device_identifiers = []
+CONVERSATION_THRESHOLD = 5
 
 def getDeviceFileName(packet):
 	found = False
@@ -123,237 +125,242 @@ def getConversationAttributesForFlow(flow_file_name):
 							spot_found = True
 					if spot_found == False:
 						packets.append(packet)
-					else:
-						packets.append(packet)
+				else:
+					packets.append(packet)
 							
-					print(packets)
-					packet = {}
-				else:
-					# Pull out a line from the packet and add it to the packet object
-					lineRe = list(re.finditer(r"\t\t\t(?P<key>[^ ]*): '(?P<value>.*)',", line))
-					if len(lineRe) > 0:
-						outputDict = lineRe[0].groupdict()
-						key = outputDict["key"]
-						value = outputDict["value"]
-						# Determine if the key is necessary to calculate the conversation information
-						if	key == "Packet_Timestamp" or\
-							key == "Packet_Type" or\
-							key == "Packet_Length" or\
-							key == "Ethernet_Source_MAC" or\
-							key == "Ethernet_Destination_MAC" or\
-							key == "IP_Source_Address" or\
-							key == "IP_Source_Version" or\
-							key == "TCP_Source_Port" or\
-							key == "TCP_Destination_Port" or\
-							key == "TCP_Sequence_Number" or\
-							key == "TCP_Acknowledge_Number" or\
-							key == "UDP_Source_Port" or\
-							key == "UDP_Destination_Port" or\
-							key == "DNS_Identifier" or\
-							key == "DNS_Query_Or_Response" or\
-							key == "DNS_Response_Code":
-							packet[key] = value
-				row += 1
-		
-		# Pull out the conversations from the flow packets
-		conversation_attributes = []
-		conversations = {
-			"TCP": {
-				"num_packets": 0,
-				"num_packets_total": 0,
-				"total_packet_length": 0,
-				"num_packets_sent": 0,
-				"num_packets_received": 0,
-				"time_between_conv": 0,
-				"num_packets_sent_to_in_network_devices": 0,
-				"num_packets_sent_to_out_network_devces": 0,
-				"last_packet_timestamp": -1,
-			},
-			"UDP": {
-				"num_packets": 0,
-				"num_packets_total": 0,
-				"total_packet_length": 0,
-				"num_packets_sent": 0,
-				"num_packets_received": 0,
-				"time_between_conv": 0,
-				"num_packets_sent_to_in_network_devices": 0,
-				"num_packets_sent_to_out_network_devces": 0,
-				"last_packet_timestamp": -1,
-			},
-			"DNS": {
-				"num_packets": 0,
-				"num_packets_total": 0,
-				"total_packet_length": 0,
-				"num_packets_sent": 0,
-				"num_packets_received": 0,
-				"time_between_conv": 0,
-				"num_packets_sent_to_in_network_devices": 0,
-				"num_packets_sent_to_out_network_devces": 0,
-				"last_packet_timestamp": -1,
-			},
-			"IP": {
-				"num_packets": 0,
-				"num_packets_total": 0,
-				"total_packet_length": 0,
-				"num_packets_sent": 0,
-				"num_packets_received": 0,
-				"time_between_conv": 0,
-				"num_packets_sent_to_in_network_devices": 0,
-				"num_packets_sent_to_out_network_devces": 0,
-				"last_packet_timestamp": -1,
-			},
-			"ICMP": {
-				"num_packets": 0,
-				"num_packets_total": 0,
-				"total_packet_length": 0,
-				"num_packets_sent": 0,
-				"num_packets_received": 0,
-				"time_between_conv": 0,
-				"num_packets_sent_to_in_network_devices": 0,
-				"num_packets_sent_to_out_network_devces": 0,
-				"last_packet_timestamp": -1,
-			},
-			"ARP": {
-				"num_packets": 0,
-				"num_packets_total": 0,
-				"total_packet_length": 0,
-				"num_packets_sent": 0,
-				"num_packets_received": 0,
-				"time_between_conv": 0,
-				"num_packets_sent_to_in_network_devices": 0,
-				"num_packets_sent_to_out_network_devces": 0,
-				"last_packet_timestamp": -1,
-			},
-			"Ethernet": {
-				"num_packets": 0,
-				"num_packets_total": 0,
-				"total_packet_length": 0,
-				"num_packets_sent": 0,
-				"num_packets_received": 0,
-				"time_between_conv": 0,
-				"num_packets_sent_to_in_network_devices": 0,
-				"num_packets_sent_to_out_network_devces": 0,
-				"last_packet_timestamp": -1,
-			}
-		}
-		for packet in packets:
-			ptype = packet["Packet_Type"]
-			ptime = packet["Timestamp"]
-			if conversations[ptype]["last_packet_timestamp"] + CONVERSATION_THRESHOLD >= ptime:
-				conv = conversations[ptype]
-				conv_stats = []
-				# Add attribute for number of TCP packets
-				if "TCP" == ptype:
-					conv_stats.append(conv["num_packets"])
-				else:
-					conv_stats.append(0)
-
-				# Add attribute for number of UDP packets
-				if "UDP" == ptype:
-					conv_stats.append(conv["num_packets"])
-				else:
-					conv_stats.append(0)
-
-				# Add attribute for number of DNS packets
-				if "DNS" == ptype:
-					conv_stats.append(conv["num_packets"])
-				else:
-					conv_stats.append(0)
-
-				# Add attribute for number of IP packets
-				if "IP" == ptype:
-					conv_stats.append(conv["num_packets"])
-				else:
-					conv_stats.append(0)
-
-				# Add attribute for number of ICMP packets
-				if "ICMP" == ptype:
-					conv_stats.append(conv["num_packets"])
-				else:
-					conv_stats.append(0)
-
-				# Add attribute for number of ARP packets
-				if "ARP" == ptype:
-					conv_stats.append(conv["num_packets"])
-				else:
-					conv_stats.append(0)
-
-				# Add attribute for number of Ethernet packets
-				if "Ethernet" == ptype:
-					conv_stats.append(conv["num_packets"])
-				else:
-					conv_stats.append(0)
-
-				# Add the average packet length
-				conv_stats.append(conv["total_packet_length"] / conv["num_packets_total"])
-
-				# Add number of packets sent
-				conv_stats.append(conv["num_packets_sent"])
-
-				# Add the number of packets received
-				conv_stats.append(conv["num_packets_received"])
-
-				# Add the number of packets sent to devices inside the network
-				conv_stats.append(conv["num_packets_sent_to_in_network_devices"])
-
-				# Add the number of packets sent to devices outside the network
-				conv_stats.append(conv["num_packets_sent_to_out_network_devces"])
-
-				# Add the information from the current conversation to the list of information about the conversations for this flow
-				conversation_attributes.append(conv_stats)
-
-				# Reset everything
-				conv_stats = []
-
-				# Reset the conversation information for the stats of the new packet
-				conv["num_packets"] = 1
-				conv["total_packet_length"] = packet["Packet_Length"]
-				conv["num_packets_total"] = 1
-				conv["num_packets_sent"] = 0
-				conv["num_packets_received"] = 0
-				conv["num_packets_sent_to_in_network_devices"] = 0
-				conv["num_packets_sent_to_out_network_devices"] = 0
-
-				# Check if the packet is being sent or received
-				if packet["IP_Source_Address"] == flow_src_ip:
-					conv["num_packets_sent"] += 1
-				else:
-					conv["num_packets_received"] += 1
-		
-				# Check if the packet is being sent to a device inside or outside the network
-				network_ip_found = False
-				dest_ip = packet["IP_Destination_Address"]
-				for label_row in ip_labels:
-					if label_row["IP"] == dest_ip:
-						network_ip_found = True
-						conv["num_packets_sent_to_in_network_devices"] += 1
-
-				if network_ip_found == False:
-					conv["num_packets_sent_to_out_network_devices"] += 1
+				packet = {}
 			else:
-				conv = conversations[ptype]
-				# Update the number of packets
-				conv["num_packets"] += 1
-				conv["num_packets_total"] += 1
+				# Pull out a line from the packet and add it to the packet object
+				lineRe = list(re.finditer(r"\t\t\t(?P<key>[^ ]*): '(?P<value>.*)',", line))
+				if len(lineRe) > 0:
+					outputDict = lineRe[0].groupdict()
+					key = outputDict["key"]
+					value = outputDict["value"]
+					# Determine if the key is necessary to calculate the conversation information
+					if	key == "Packet_Timestamp" or\
+						key == "Packet_Type" or\
+						key == "Packet_Length" or\
+						key == "Ethernet_Source_MAC" or\
+						key == "Ethernet_Destination_MAC" or\
+						key == "IP_Source_Address" or\
+						key == "IP_Destination_Address" or\
+						key == "IP_Source_Version" or\
+						key == "TCP_Source_Port" or\
+						key == "TCP_Destination_Port" or\
+						key == "TCP_Sequence_Number" or\
+						key == "TCP_Acknowledge_Number" or\
+						key == "UDP_Source_Port" or\
+						key == "UDP_Destination_Port" or\
+						key == "DNS_Identifier" or\
+						key == "DNS_Query_Or_Response" or\
+						key == "DNS_Response_Code":
+						packet[key] = value
+		row += 1
 
-				# Update total packet length
-				conv["total_packet_length"] += packet["Packet_Length"]
+	# Pull out the conversations from the flow packets
+	conversation_attributes = []
+	conversations = {
+		"TCP": {
+			"num_packets": 0,
+			"num_packets_total": 0,
+			"total_packet_length": 0,
+			"num_packets_sent": 0,
+			"num_packets_received": 0,
+			"time_between_conv": 0,
+			"num_packets_sent_to_in_network_devices": 0,
+			"num_packets_sent_to_out_network_devices": 0,
+			"last_packet_timestamp": -1,
+		},
+		"UDP": {
+			"num_packets": 0,
+			"num_packets_total": 0,
+			"total_packet_length": 0,
+			"num_packets_sent": 0,
+			"num_packets_received": 0,
+			"time_between_conv": 0,
+			"num_packets_sent_to_in_network_devices": 0,
+			"num_packets_sent_to_out_network_devices": 0,
+			"last_packet_timestamp": -1,
+		},
+		"DNS": {
+			"num_packets": 0,
+			"num_packets_total": 0,
+			"total_packet_length": 0,
+			"num_packets_sent": 0,
+			"num_packets_received": 0,
+			"time_between_conv": 0,
+			"num_packets_sent_to_in_network_devices": 0,
+			"num_packets_sent_to_out_network_devices": 0,
+			"last_packet_timestamp": -1,
+		},
+		"IP": {
+			"num_packets": 0,
+			"num_packets_total": 0,
+			"total_packet_length": 0,
+			"num_packets_sent": 0,
+			"num_packets_received": 0,
+			"time_between_conv": 0,
+			"num_packets_sent_to_in_network_devices": 0,
+			"num_packets_sent_to_out_network_devices": 0,
+			"last_packet_timestamp": -1,
+		},
+		"ICMP": {
+			"num_packets": 0,
+			"num_packets_total": 0,
+			"total_packet_length": 0,
+			"num_packets_sent": 0,
+			"num_packets_received": 0,
+			"time_between_conv": 0,
+			"num_packets_sent_to_in_network_devices": 0,
+			"num_packets_sent_to_out_network_devices": 0,
+			"last_packet_timestamp": -1,
+		},
+		"ARP": {
+			"num_packets": 0,
+			"num_packets_total": 0,
+			"total_packet_length": 0,
+			"num_packets_sent": 0,
+			"num_packets_received": 0,
+			"time_between_conv": 0,
+			"num_packets_sent_to_in_network_devices": 0,
+			"num_packets_sent_to_out_network_devices": 0,
+			"last_packet_timestamp": -1,
+		},
+		"Ethernet": {
+			"num_packets": 0,
+			"num_packets_total": 0,
+			"total_packet_length": 0,
+			"num_packets_sent": 0,
+			"num_packets_received": 0,
+			"time_between_conv": 0,
+			"num_packets_sent_to_in_network_devices": 0,
+			"num_packets_sent_to_out_network_devices": 0,
+			"last_packet_timestamp": -1,
+		}
+	}
 
-				# Check if the packet is being sent or received
-				if packet["IP_Source_Address"] == flow_src_ip:
-					conv["num_packets_sent"] += 1
-				else:
-					conv["num_packets_received"] += 1
+	for packet in packets:
+		ptype = packet["Packet_Type"]
+		ptime = packet["Packet_Timestamp"]
+		if float(conversations[ptype]["last_packet_timestamp"]) + float(CONVERSATION_THRESHOLD) >= float(ptime):
+			conv = conversations[ptype]
+			conv_stats = []
+	
+			# Add attribute for number of TCP packets
+			if "TCP" == ptype:
+				conv_stats.append(conv["num_packets"])
+			else:
+				conv_stats.append(0)
+	
+			# Add attribute for number of UDP packets
+			if "UDP" == ptype:
+				conv_stats.append(conv["num_packets"])
+			else:
+				conv_stats.append(0)
 
-				# Check if the packet is being sent to a device inside or outside the network
-				network_ip_found = False
-				dest_ip = packet["IP_Destination_Address"]
-				for label_row in ip_labels:
-					if label_row["IP"] == dest_ip:
-						network_ip_found = True
-						conv["num_packets_sent_to_in_network_devices"] += 1
-				if network_ip_found == False:
-					conv["num_packets_sent_to_out_network_devices"] += 1
+			# Add attribute for number of DNS packets
+			if "DNS" == ptype:
+				conv_stats.append(conv["num_packets"])
+			else:
+				conv_stats.append(0)
+
+			# Add attribute for number of IP packets
+			if "IP" == ptype:
+				conv_stats.append(conv["num_packets"])
+			else:
+				conv_stats.append(0)
+
+			# Add attribute for number of ICMP packets
+			if "ICMP" == ptype:
+				conv_stats.append(conv["num_packets"])
+			else:
+				conv_stats.append(0)
+
+			# Add attribute for number of ARP packets
+			if "ARP" == ptype:
+				conv_stats.append(conv["num_packets"])
+			else:
+				conv_stats.append(0)
+
+			# Add attribute for number of Ethernet packets
+			if "Ethernet" == ptype:
+				conv_stats.append(conv["num_packets"])
+			else:
+				conv_stats.append(0)
+
+			# Add the average packet length
+			conv_stats.append(conv["total_packet_length"] / conv["num_packets_total"])
+			# Add number of packets sent
+			conv_stats.append(conv["num_packets_sent"])
+
+			# Add the number of packets received
+			conv_stats.append(conv["num_packets_received"])
+
+			# Add the number of packets sent to devices inside the network
+			conv_stats.append(conv["num_packets_sent_to_in_network_devices"])
+
+			# Add the number of packets sent to devices outside the network
+			conv_stats.append(conv["num_packets_sent_to_out_network_devices"])
+
+			# Add the information from the current conversation to the list of information about the conversations for this flow
+			conversation_attributes.append(conv_stats)
+			print(conversation_attributes)
+			print("test")
+
+			# Reset everything
+			conv_stats = []
+
+			# Reset the conversation information for the stats of the new packet
+			conv["num_packets"] = 1
+			conv["total_packet_length"] = packet["Packet_Length"]
+			conv["num_packets_total"] = 1
+			conv["num_packets_sent"] = 0
+			conv["num_packets_received"] = 0
+			conv["num_packets_sent_to_in_network_devices"] = 0
+			conv["num_packets_sent_to_out_network_devices"] = 0
+
+			# Check if the packet is being sent or received
+			if packet["IP_Source_Address"] == flow_src_ip:
+				conv["num_packets_sent"] += 1
+			else:
+				conv["num_packets_received"] += 1
+		
+			# Check if the packet is being sent to a device inside or outside the network
+			network_ip_found = False
+			dest_ip = packet["IP_Destination_Address"]
+			for label_row in ip_labels:
+				if label_row["IP"] == dest_ip:
+					network_ip_found = True
+					conv["num_packets_sent_to_in_network_devices"] += 1
+
+			if network_ip_found == False:
+				conv["num_packets_sent_to_out_network_devices"] += 1
+		else:
+			conv = conversations[ptype]
+			
+			# Update the number of packets
+			conv["num_packets"] += 1
+			conv["num_packets_total"] += 1
+
+			# Update total packet length
+			conv["total_packet_length"] = float(conv["total_packet_length"]) + float(packet["Packet_Length"])
+
+			# Check if the packet is being sent or received
+			if packet["IP_Source_Address"] == flow_src_ip:
+				conv["num_packets_sent"] += 1
+			else:
+				conv["num_packets_received"] += 1
+
+			# Check if the packet is being sent to a device inside or outside the network
+			network_ip_found = False
+			dest_ip = packet["IP_Destination_Address"]
+			for label_row in ip_labels:
+				if label_row["IP"] == dest_ip:
+					network_ip_found = True
+					conv["num_packets_sent_to_in_network_devices"] += 1
+
+			if network_ip_found == False:
+				conv["num_packets_sent_to_out_network_devices"] += 1
 
 	return conversation_attributes
 
@@ -381,7 +388,7 @@ verbose = sys.argv[2]
 print("Processing the PCAP files")
 
 devices_identifiers = []
-CONVERSATION_THRESHOLD = 0
+#CONVERSATION_THRESHOLD = 5
 
 # Check if the content JSON files have already been created
 flow_json_dir =  os.path.join(experiment_dir, 'flow_json')
@@ -451,32 +458,84 @@ print(('You need to do the following before continuing:\n'
 	'Note: The previous steps will not be repeated unless you delete the json directory. So you can safely stop the program here and restart it.'))
 input("Press Enter to continue...")
 
+training_json_dir = os.path.join(experiment_dir, "training_json")
+eval_json_dir = os.path.join(experiment_dir, "eval_json")
+if not os.path.exists(training_json_dir) or not os.path.exists(eval_json_dir):
+	print("ERROR: You need to create training and eval directories and put your flow json files in them before you can continue.")
+	sys.exit(-1)
+
 # Read in the set of labels
 import csv
 
 ip_labels = []
 labels_path = os.path.join(experiment_dir, 'device_labels.csv')
-with open(labels_path, "r") as label_file:
-	csv_reader = csv.reader(label_file, delimiter=',')
-	line_count = 0
-	for row in csv_reader:
-		if line_count > 0:
-			ip_labels.append({
-				"IP": row[0],
-				"Label": row[1],
-			})
-		line_count += 1
 
-# Load in all the flow information for a single device
-for device_dir in os.listdir(flow_json_dir):
+line_count = 0
+labels_file = csv.reader(open(labels_path, newline='\r'), delimiter=',', quotechar='|')
+for row in labels_file:
+	if line_count > 0 and len(row) > 0:
+		ip_labels.append({
+			"IP": row[0],
+			"Label": row[1],
+		})
+	line_count += 1
+
+print("TRAINING")
+
+# Load in all the flow information for the devices in the training set
+training_data = []
+training_labels = []
+for device_dir in os.listdir(training_json_dir):
 	conversation_attributes = []
 	conversation_labels = []
 
-	device_dir_path = os.path.join(flow_json_dir, device_dir)
+	device_dir_path = os.path.join(training_json_dir, device_dir)
 	if os.path.isdir(device_dir_path):
 		# Get the conversation for the flow
 		for flow_file_name in os.listdir(device_dir_path):
+			src_ip = ""
+			flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
+			if len(flowRe) > 0:
+				flowElems = flowRe[0].groupdict()
+				src_ip = flowElems["src_ip"]
 			ca = getConversationAttributesForFlow(flow_file_name)
+			print(ca)
+			num_conv_attributes = len(conversation_attributes)
+			num_ca = len(ca)
+			conversation_attributes[num_conv_attributes:num_conv_attributes + num_ca] = ca
+			conversation_labels[num_conv_attributes:num_conv_attributes + num_ca] = [src_ip] * num_ca
+	print(conversation_attributes)
+	print(conversation_labels)
+
+print("EVAL")
+
+# Load in the flow information for the devices in the eval set
+eval_data = []
+eval_labels = []
+for device_dir in os.listdir(eval_json_dir):
+	conversation_attributes = []
+	conversation_labels = []
+
+	device_dir_path = os.path.join(eval_json_dir, device_dir)
+	if os.path.isdir(device_dir_path):
+		# Get the conversation for the flow
+		for flow_file_name in os.listdir(device_dir_path):
+			src_ip = ""
+			flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
+			if len(flowRe) > 0:
+				flowElems = flowRe[0].groupdict()
+				src_ip = flowElems["src_ip"]
+			ca = getConversationAttributesForFlow(flow_file_name)
+			#print(ca)
+			num_conv_attributes = len(conversation_attributes)
+			num_ca = len(ca)
+			conversation_attributes[num_conv_attributes:num_conv_attributes + num_ca] = ca
+			conversation_labels[num_conv_attributes:num_conv_attributes + num_ca] = [src_ip] * num_ca
+	print(conversation_attributes)
+	print(conversation_labels)
+
+
+
 
 
 """
