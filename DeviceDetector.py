@@ -141,17 +141,7 @@ def getConversationAttributesForFlow(flow_file_name):
 						key == "Ethernet_Source_MAC" or\
 						key == "Ethernet_Destination_MAC" or\
 						key == "IP_Source_Address" or\
-						key == "IP_Destination_Address" or\
-						key == "IP_Source_Version" or\
-						key == "TCP_Source_Port" or\
-						key == "TCP_Destination_Port" or\
-						key == "TCP_Sequence_Number" or\
-						key == "TCP_Acknowledge_Number" or\
-						key == "UDP_Source_Port" or\
-						key == "UDP_Destination_Port" or\
-						key == "DNS_Identifier" or\
-						key == "DNS_Query_Or_Response" or\
-						key == "DNS_Response_Code":
+						key == "IP_Destination_Address":
 						packet[key] = value
 		row += 1
 
