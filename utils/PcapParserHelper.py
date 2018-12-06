@@ -59,9 +59,9 @@ class PcapParserHelper:
 		if packet.haslayer(IP):
 			device_file.write("			IP_Source_Address: '" + str(packet[IP].src) + "',\n")
 			device_file.write("			IP_Destination_Address: '" + str(packet[IP].dst) + "',\n")
-			device_file.write("			IP_Source_Version: '" + str(packet[IP].version) + "',\n")
-
+			
 			if verbose:
+				device_file.write("			IP_Source_Version: '" + str(packet[IP].version) + "',\n")
 				device_file.write("			IP_Destination_Domain: '" + self.__getDomainName(packet[IP].dst) + "',\n")
 				device_file.write("			IP_Fragment_Offset: '" + str(packet[IP].frag) + "',\n")
 				device_file.write("			IP_Protocol_Num: '" + str(packet[IP].proto) + "',\n")
@@ -76,12 +76,11 @@ class PcapParserHelper:
 				device_file.write("			IP_Identification: '" + str(packet[IP].id) + "',\n")
 		# Get the TCP information from the packet
 		if packet.haslayer(TCP):
-			device_file.write("			TCP_Source_Port: '" + str(packet[TCP].sport) + "',\n")
-			device_file.write("			TCP_Destination_Port: '" + str(packet[TCP].dport) + "',\n")
-			device_file.write("			TCP_Sequence_Number: '" + str(packet[TCP].seq) + "',\n")
-			device_file.write("			TCP_Acknowledge_Number: '" + str(packet[TCP].ack) + "',\n")
-
 			if verbose:
+				device_file.write("			TCP_Source_Port: '" + str(packet[TCP].sport) + "',\n")
+				device_file.write("			TCP_Destination_Port: '" + str(packet[TCP].dport) + "',\n")
+				device_file.write("			TCP_Sequence_Number: '" + str(packet[TCP].seq) + "',\n")
+				device_file.write("			TCP_Acknowledge_Number: '" + str(packet[TCP].ack) + "',\n")
 				device_file.write("			TCP_Data_Offset: '" + str(packet[TCP].dataofs) + "',\n")
 				device_file.write("			TCP_Reserved_Data: '" + str(packet[TCP].reserved) + "',\n")
 				device_file.write("			TCP_Control_Flags: '" + str(packet[TCP].flags) + "',\n")
@@ -91,10 +90,9 @@ class PcapParserHelper:
 				device_file.write("			TCP_Options: '" + str(packet[TCP].options) + "',\n")
 		# Get the UDP information from the packet
 		if packet.haslayer(UDP):
-			device_file.write("			UDP_Source_Port: '" + str(packet[UDP].sport) + "',\n")
-			device_file.write("			UDP_Destination_Port: '" + str(packet[UDP].dport) + "',\n")
-
 			if verbose:
+				device_file.write("			UDP_Source_Port: '" + str(packet[UDP].sport) + "',\n")
+				device_file.write("			UDP_Destination_Port: '" + str(packet[UDP].dport) + "',\n")
 				device_file.write("			UDP_Length: '" + str(packet[UDP].len) + "',\n")
 				device_file.write("			UDP_Checksum: '" + str(packet[UDP].chksum) + "',\n")
 		# Get the ICMP information from the packet
@@ -116,11 +114,10 @@ class PcapParserHelper:
 				device_file.write("			ICMP_Identifier: '" + str(packet[ICMP].id) + "',\n")
 		# Get the DNS information from the packet
 		if packet.haslayer(DNS):
-			device_file.write("			DNS_Identifier: '" + str(packet[DNS].id) + "',\n")
-			device_file.write("			DNS_Query_Or_Response: '" + str(packet[DNS].qr) + "',\n")
-			device_file.write("			DNS_Response_Code: '" + str(packet[DNS].rcode) + "',\n")
-
 			if verbose:
+				device_file.write("			DNS_Identifier: '" + str(packet[DNS].id) + "',\n")
+				device_file.write("			DNS_Query_Or_Response: '" + str(packet[DNS].qr) + "',\n")
+				device_file.write("			DNS_Response_Code: '" + str(packet[DNS].rcode) + "',\n")
 				device_file.write("			DNS_Op_Code: '" + str(packet[DNS].opcode) + "',\n")
 				device_file.write("			DNS_Authoritative_Answer: '" + str(packet[DNS].aa) + "',\n")
 				device_file.write("			DNS_TrunCation: '" + str(packet[DNS].tc) + "',\n")
