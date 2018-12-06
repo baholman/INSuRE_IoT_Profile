@@ -516,7 +516,7 @@ actual_labels = {}
 for label in unique_labels:
 	actual_labels[label] = 0
 for label_list in unique_labels:
-	all_labels[label_list] = actual_labels
+	all_labels[label_list] = actual_labels.copy()
 
 # Load in the flow information for the devices in the eval set
 for device_dir in os.listdir(eval_json_dir):
@@ -569,17 +569,17 @@ for device in unique_labels:
 	for kLabel in all_labels:
 		for uLabel in all_labels[kLabel]:
 			if uLabel == device and kLabel == device:
-				TP_numerator += 1
-				TPandFN_denominator += 1
+				TP_numerator += all_labels[kLabel][uLabel]
+				TPandFN_denominator += all_labels[kLabel][uLabel]
 			elif uLabel != device and kLabel == device:
-				FP_numerator += 1
-				FPandTN_denominator += 1
+				FP_numerator += all_labels[kLabel][uLabel]
+				FPandTN_denominator += all_labels[kLabel][uLabel]
 			elif uLabel == device and kLabel != device:
-				FN_numerator += 1
-				TPandFN_denominator += 1
+				FN_numerator += all_labels[kLabel][uLabel]
+				TPandFN_denominator += all_labels[kLabel][uLabel]
 			elif uLabel != device and kLabel != device:
-				TN_numerator += 1
-				FPandTN_denominator += 1
+				TN_numerator += all_labels[kLabel][uLabel]
+				FPandTN_denominator += all_labels[kLabel][uLabel]
 	
 	device_report = {}
 	device_report['True Positive Rate'] = str(TP_numerator) + ' / ' + str(TPandFN_denominator)
