@@ -393,6 +393,7 @@ else:
 		print('ERROR: The pcap directory provided does not exist')
 
 	for pcap_file in os.listdir(pcap_dir):
+		print("Currently processing the " + pcap_file + " PCAP file")
 		# Create the dictionary of packet information split by pcap file
 		parser = PcapParserHelper()
 
@@ -480,6 +481,7 @@ print("Processing the training data")
 training_data = []
 training_labels = []
 for device_dir in os.listdir(training_json_dir):
+	print("Processing the " + device_dir + " device in the training data")
 	conversation_attributes = []
 	conversation_labels = []
 
@@ -487,6 +489,7 @@ for device_dir in os.listdir(training_json_dir):
 	if os.path.isdir(device_dir_path):
 		# Get the conversation for the flow
 		for flow_file_name in os.listdir(device_dir_path):
+			print("Processing the " + flow_file_name + " flow in the training data")
 			# Get the label for the device based on the source IP on the file
 			src_ip = ""
 			flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
@@ -511,6 +514,7 @@ print("Processing the evaluation data")
 
 # Load in the flow information for the devices in the eval set
 for device_dir in os.listdir(eval_json_dir):
+	print("Processing the " + device_dir + " device in the training data")
 	conversation_attributes = []
 	conversation_labels = []
 
@@ -518,6 +522,7 @@ for device_dir in os.listdir(eval_json_dir):
 	if os.path.isdir(device_dir_path):
 		# Get the conversation for the flow
 		for flow_file_name in os.listdir(device_dir_path):
+			print("Processing the " + flow_file_name + " flow in the training data")
 			# Get the label for the device based on the source IP on the file
 			src_ip = ""
 			flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
