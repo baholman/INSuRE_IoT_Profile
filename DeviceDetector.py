@@ -512,11 +512,21 @@ for device_dir in os.listdir(training_json_dir):
 
 print("Processing the evaluation data")
 
+# Creates a dictionary of labels containing each label to evaluate the knn algorithms accuracy
+all_labels = {}
+actual_labels = {}
+
+for label in unique_labels:
+	actual_labels[label] = 0
+for label_list in unique_labels:
+	all_labels[label_list] = actual_labels.copy()
+
 # Load in the flow information for the devices in the eval set
 for device_dir in os.listdir(eval_json_dir):
 	print("Processing the " + device_dir + " device in the training data")
 	conversation_attributes = []
 	conversation_labels = []
+	label = "Unknown"
 
 	device_dir_path = os.path.join(eval_json_dir, device_dir)
 	if os.path.isdir(device_dir_path):
@@ -530,8 +540,6 @@ for device_dir in os.listdir(eval_json_dir):
 				flowElems = flowRe[0].groupdict()
 				src_ip = flowElems["src_ip"]
 
-
-			label = "Unknown"
 			for iplabel in ip_labels:
 				if iplabel["IP"] == src_ip:
 					label = iplabel["Label"]
@@ -546,4 +554,45 @@ for device_dir in os.listdir(eval_json_dir):
 	print("Starting to run KNN for device " + device_dir)
 	# Run the KNN analysis per evaluation device
 	k = KNN()
-	k.runKNN(training_data, training_labels, conversation_attributes, conversation_labels, unique_labels)
+	knn_label = k.runKNN(training_data, training_labels, conversation_attributes, conversation_labels, unique_labels, experiment_dir)
+
+	# Adds accuracy of device to all_labels dictionary
+	all_labels[knn_label][label] += 1
+
+device_report_dir = os.path.join(experiment_dir, 'device_report')
+if not os.path.exists(device_report_dir):
+	os.makedirs(device_report_dir)
+
+for device in unique_labels:
+	TP_numerator = 0
+	FN_numerator = 0
+	TPandFN_denominator = 0
+	FP_numerator = 0
+	TN_numerator = 0
+	FPandTN_denominator = 0
+
+	for kLabel in all_labels:
+		for uLabel in all_labels[kLabel]:
+			if uLabel == device and kLabel == device:
+				TP_numerator += all_labels[kLabel][uLabel]
+				TPandFN_denominator += all_labels[kLabel][uLabel]
+			elif uLabel != device and kLabel == device:
+				FP_numerator += all_labels[kLabel][uLabel]
+				FPandTN_denominator += all_labels[kLabel][uLabel]
+			elif uLabel == device and kLabel != device:
+				FN_numerator += all_labels[kLabel][uLabel]
+				TPandFN_denominator += all_labels[kLabel][uLabel]
+			elif uLabel != device and kLabel != device:
+				TN_numerator += all_labels[kLabel][uLabel]
+				FPandTN_denominator += all_labels[kLabel][uLabel]
+	
+	device_report = {}
+	device_report['True Positive Rate'] = str(TP_numerator) + ' / ' + str(TPandFN_denominator)
+	device_report['False Negative Rate'] = str(FN_numerator) + ' / ' + str(TPandFN_denominator)
+	device_report['False Positive Rate'] = str(FP_numerator) + ' / ' + str(FPandTN_denominator)
+	device_report['True Negative Rate'] = str(TN_numerator) + ' / ' + str(FPandTN_denominator)
+
+	device_path_name = device + '_report.json'
+	device_report_path = os.path.join(device_report_dir, device_path_name)
+	with open(device_report_path, 'w') as outfile:
+		json.dump(device_report, outfile)
