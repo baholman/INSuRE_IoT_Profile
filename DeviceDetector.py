@@ -549,7 +549,7 @@ for device_dir in os.listdir(eval_json_dir):
 	print("Starting to run KNN for device " + device_dir)
 	# Run the KNN analysis per evaluation device
 	k = KNN()
-	knn_label = k.runKNN(training_data, training_labels, conversation_attributes, conversation_labels, unique_labels, experiment_dir)
+	knn_label = k.runKNN(training_data, training_labels, conversation_attributes, conversation_labels, unique_labels, experiment_dir, False)
 
 	# Adds accuracy of device to all_labels dictionary
 	all_labels[knn_label][label] += 1
