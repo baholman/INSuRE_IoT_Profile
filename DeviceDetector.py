@@ -570,42 +570,42 @@ def main():
 		# Adds accuracy of device to all_labels dictionary
 		all_labels[knn_label][label] += 1
 
-	device_report_dir = os.path.join(experiment_dir, 'device_report')
-	if not os.path.exists(device_report_dir):
-		os.makedirs(device_report_dir)
+		device_report_dir = os.path.join(experiment_dir, 'device_report')
+		if not os.path.exists(device_report_dir):
+			os.makedirs(device_report_dir)
 
-	for device in unique_labels:
-		TP_numerator = 0
-		FN_numerator = 0
-		TPandFN_denominator = 0
-		FP_numerator = 0
-		TN_numerator = 0
-		FPandTN_denominator = 0
+		for device in unique_labels:
+			TP_numerator = 0
+			FN_numerator = 0
+			TPandFN_denominator = 0
+			FP_numerator = 0
+			TN_numerator = 0
+			FPandTN_denominator = 0
 
-		for kLabel in all_labels:
-			for uLabel in all_labels[kLabel]:
-				if uLabel == device and kLabel == device:
-					TP_numerator += all_labels[kLabel][uLabel]
-					TPandFN_denominator += all_labels[kLabel][uLabel]
-				elif uLabel != device and kLabel == device:
-					FP_numerator += all_labels[kLabel][uLabel]
-					FPandTN_denominator += all_labels[kLabel][uLabel]
-				elif uLabel == device and kLabel != device:
-					FN_numerator += all_labels[kLabel][uLabel]
-					TPandFN_denominator += all_labels[kLabel][uLabel]
-				elif uLabel != device and kLabel != device:
-					TN_numerator += all_labels[kLabel][uLabel]
-					FPandTN_denominator += all_labels[kLabel][uLabel]
-		
-		device_report = {}
-		device_report['True Positive Rate'] = str(TP_numerator) + ' / ' + str(TPandFN_denominator)
-		device_report['False Negative Rate'] = str(FN_numerator) + ' / ' + str(TPandFN_denominator)
-		device_report['False Positive Rate'] = str(FP_numerator) + ' / ' + str(FPandTN_denominator)
-		device_report['True Negative Rate'] = str(TN_numerator) + ' / ' + str(FPandTN_denominator)
+			for kLabel in all_labels:
+				for uLabel in all_labels[kLabel]:
+					if uLabel == device and kLabel == device:
+						TP_numerator += all_labels[kLabel][uLabel]
+						TPandFN_denominator += all_labels[kLabel][uLabel]
+					elif uLabel != device and kLabel == device:
+						FP_numerator += all_labels[kLabel][uLabel]
+						FPandTN_denominator += all_labels[kLabel][uLabel]
+					elif uLabel == device and kLabel != device:
+						FN_numerator += all_labels[kLabel][uLabel]
+						TPandFN_denominator += all_labels[kLabel][uLabel]
+					elif uLabel != device and kLabel != device:
+						TN_numerator += all_labels[kLabel][uLabel]
+						FPandTN_denominator += all_labels[kLabel][uLabel]
+			
+			device_report = {}
+			device_report['True Positive Rate'] = str(TP_numerator) + ' / ' + str(TPandFN_denominator)
+			device_report['False Negative Rate'] = str(FN_numerator) + ' / ' + str(TPandFN_denominator)
+			device_report['False Positive Rate'] = str(FP_numerator) + ' / ' + str(FPandTN_denominator)
+			device_report['True Negative Rate'] = str(TN_numerator) + ' / ' + str(FPandTN_denominator)
 
-		device_path_name = device + '_report.json'
-		device_report_path = os.path.join(device_report_dir, device_path_name)
-		with open(device_report_path, 'w') as outfile:
-			json.dump(device_report, outfile)
+			device_path_name = device + '_report.json'
+			device_report_path = os.path.join(device_report_dir, device_path_name)
+			with open(device_report_path, 'w') as outfile:
+				json.dump(device_report, outfile)
 			
 main()

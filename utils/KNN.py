@@ -16,7 +16,7 @@ K-Nearest Neighbor
 Implements K-Nearest Neighbor approach to machine learning
 """
 class KNN():
-	def runKNN(self, attributes_training, training_labels, attributes_eval, eval_labels, all_device_labels, exp_dir):
+	def runKNN(self, attributes_training, training_labels, attributes_eval, eval_labels, all_device_labels, exp_dir, display_graph = False):
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
 			print('ERROR: No training attributes provided')
@@ -34,7 +34,7 @@ class KNN():
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
 		highest_score_label = self.__evalKNN(eval_pred, eval_labels, classifier, all_device_labels, packet_count, attributes_eval, exp_dir)
 		# Uncomment code to find K value graph
-		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels, exp_dir)
+		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels, exp_dir, display_graph)
 		return highest_score_label
 
 	def __breakFlow(self, eval_flow_attributes, trainging_flow_attributes):
@@ -155,7 +155,7 @@ class KNN():
 	training labels - the labels of the devices from the training set
 	eval_labels - the labels of the devices from the eval set
 	"""
-	def __findKValue(self, attributes_training, attributes_eval, training_labels, eval_labels, exp_dir):
+	def __findKValue(self, attributes_training, attributes_eval, training_labels, eval_labels, exp_dir, display_graph):
 		error = []
 		# Calculating error for K values between 1 and 40
 		for i in range(1, 40):  
@@ -173,6 +173,5 @@ class KNN():
 		plt.ylabel('Mean Error')
 		graphPath = os.path.join(exp_dir,'kGraph.png')
 		plt.savefig(graphPath)
-		os.system('feh ' + graphPath)
-
-
+		if display_graph:
+			os.system('feh ' + graphPath)
