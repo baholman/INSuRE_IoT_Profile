@@ -1,10 +1,6 @@
 #!/bin/python
 import sys
 
-# Ignore Future warning error
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
-
 # Check that the python version being used is Python3
 major_python_version = sys.version_info[0]
 if major_python_version != 3:
@@ -13,16 +9,23 @@ if major_python_version != 3:
 
 import os
 from utils.PcapParserHelper import PcapParserHelper
-from utils.KNN import KNN
 import pcapy as p
 from scapy.all import rdpcap, Ether, ARP, IP, TCP, UDP, ICMP, DNS, Raw
 import re
 import json
 import sys
 import csv
+import signal
+import functools
+from contextlib import contextmanager
+from multiprocessing import Process, Pool
 
 device_identifiers = []
 CONVERSATION_THRESHOLD = 5
+CORES = 4
+
+experiment_dir = ""
+files_already_closed = False
 
 def getDeviceFileName(packet):
 	found = False
@@ -87,7 +90,67 @@ def getFlowFilePath(packet, flow_json_dir, device_name):
 	device_flow_file.close()
 	return device_flow_path
 
+def closeAllFlowFiles(flow_json_dir):
+	global files_already_closed
+
+	if files_already_closed == False:
+		# Close all the flow files
+		for dirname in os.listdir(flow_json_dir):
+			device_flow_path = os.path.join(flow_json_dir, dirname)
+			if os.path.isdir(device_flow_path):
+				for filename in os.listdir(device_flow_path):
+					device_flow_file_path = os.path.join(device_flow_path, filename)
+					flow_file = open(device_flow_file_path, "a")
+					flow_file.write("	]\n")
+					flow_file.write("}\n")
+					flow_file.close()
+			else:
+				print("Unexpected file found in " + flow_json_dir + " called " + dirname)
+
+	files_already_closed = True
+
+def download_pcap_files(pcap_file_names, pcap_dir, flow_json_dir):
+	# Create the dictionary of packet information split by pcap file
+	parser = PcapParserHelper()
+
+	for pcap_file in pcap_file_names:
+		print("Currently processing the " + pcap_file + " PCAP file")
+
+		# Set up the input file path
+		pcap_path = os.path.join(pcap_dir, pcap_file)
+
+		# Check if file exists
+		if not os.path.isfile(pcap_path):
+			print("PCAP was not a file")
+			continue
+
+		# Get packet info
+		for packet in rdpcap(pcap_path):
+			# Get path for the file of the device that this packet is associated with
+			device_name = getDeviceFileName(packet)
+
+			device_flow_path = getFlowFilePath(packet, flow_json_dir, device_name)
+			if device_flow_path != "none":
+				device_flow_file = open(device_flow_path, "a")
+				device_flow_file.write("		{\n")
+				device_flow_file.close()
+
+				# Get packet attributes
+				parser.getHeader(packet, device_flow_path, verbose)
+				#body = self.__getBody(packet, device_flow_path, verbose)
+
+				device_flow_file = open(device_flow_path, "a")
+				device_flow_file.write("		},\n")
+				device_flow_file.close()
+
+def signal_handler(sig, frame):
+	flow_json_dir = os.path.join(experiment_dir, 'flow_json')
+	closeAllFlowFiles(flow_json_dir)
+	sys.exit(0)
+
 def main():
+	global experiment_dir
+
 	# Check the number of arguments
 	if len(sys.argv) != 3:
 		print('ERROR: Incorrect number of arguments provided')
@@ -115,7 +178,6 @@ def main():
 
 	devices_identifiers = []
 	CONVERSATION_THRESHOLD = 5
-	create_flows_state = False
 
 	# Check if the content JSON files have already been created
 	flow_json_dir =  os.path.join(experiment_dir, 'flow_json')
@@ -126,15 +188,24 @@ def main():
 		# Make the content_json directory
 		os.makedirs(flow_json_dir)
 
+		# Handle Ctrl+C event
+		signal.signal(signal.SIGINT, signal_handler)
+
 		# Get the directory for the pcap files
 		pcap_dir = os.path.join(experiment_dir, 'pcaps')
 		if not os.path.isdir(pcap_dir):
 			print('ERROR: The pcap directory provided does not exist')
 
+		# Create the dictionary of packet information split by pcap file
+		parser = PcapParserHelper()
+
+		# Split up available PCAPs based on number of cores
+		pcap_dir = os.path.join(experiment_dir, "pcaps")
+		# Create the dictionary of packet information split by pcap file
+		parser = PcapParserHelper()
+
 		for pcap_file in os.listdir(pcap_dir):
 			print("Currently processing the " + pcap_file + " PCAP file")
-			# Create the dictionary of packet information split by pcap file
-			parser = PcapParserHelper()
 
 			# Set up the input file path
 			pcap_path = os.path.join(pcap_dir, pcap_file)
@@ -163,175 +234,9 @@ def main():
 					device_flow_file.write("		},\n")
 					device_flow_file.close()
 
+
+
 		# Close all the flow files
-		for dirname in os.listdir(flow_json_dir):
-			device_flow_path = os.path.join(flow_json_dir, dirname)
-			if os.path.isdir(device_flow_path):
-				for filename in os.listdir(device_flow_path):
-					device_flow_file_path = os.path.join(device_flow_path, filename)
-					flow_file = open(device_flow_file_path, "a")
-					flow_file.write("	]\n")
-					flow_file.write("}\n")
-					flow_file.close()
-			else:
-				print("Unexpected file found in " + flow_json_dir + " called " + dirname)	
-
-	# Tell the user to add the labels to the JSON files
-	print(('You need to do the following before continuing:\n'
-		'1) Create a training_json directory\n'
-		'2) Create an eval_json directory\n'
-		'3) You need to move files from the json directory into the training_json and eval_json directory based on what you are trying to evaluate\n'
-		'4) You need to put the device label in each of the json files in the training_json and eval_json directories\n'
-		'5) Press enter to continue on this prompt\n\n'
-		'Note: The previous steps will not be repeated unless you delete the json directory. So you can safely stop the program here and restart it.'))
-	input("Press Enter to continue...")
-
-	training_json_dir = os.path.join(experiment_dir, "training_json")
-	eval_json_dir = os.path.join(experiment_dir, "eval_json")
-	if not os.path.exists(training_json_dir) or not os.path.exists(eval_json_dir):
-		print("ERROR: You need to create training and eval directories and put your flow json files in them before you can continue.")
-		sys.exit(-1)
-
-	# Read in the set of labels
-	ip_labels = []
-	unique_labels = []
-	labels_path = os.path.join(experiment_dir, 'device_labels.csv')
-
-	line_count = 0
-	labels_file = csv.reader(open(labels_path, newline='\r'), delimiter=',', quotechar='|')
-	for row in labels_file:
-		if line_count > 0 and len(row) > 0:
-			# Add the current entry to the list of IP labels
-			ip_labels.append({
-				"IP": row[0],
-				"Label": row[1],
-			})
-
-			# Add the device label to the list of unique labels if it isn't already present
-			if row[1] not in unique_labels:
-				unique_labels.append(row[1])
-		line_count += 1
-
-	print("Processing the training data")
-
-	# Load in all the flow information for the devices in the training set
-	training_data = []
-	training_labels = []
-	for device_dir in os.listdir(training_json_dir):
-		print("Processing the " + device_dir + " device in the training data")
-		conversation_attributes = []
-		conversation_labels = []
-
-		device_dir_path = os.path.join(training_json_dir, device_dir)
-		if os.path.isdir(device_dir_path):
-			# Get the conversation for the flow
-			for flow_file_name in os.listdir(device_dir_path):
-				print("Processing the " + flow_file_name + " flow in the training data")
-				# Get the label for the device based on the source IP on the file
-				src_ip = ""
-				flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
-				if len(flowRe) > 0:
-					flowElems = flowRe[0].groupdict()
-					src_ip = flowElems["src_ip"]
-		
-				label = "Unknown"
-				for iplabel in ip_labels:
-					if iplabel["IP"] == src_ip:
-						label = iplabel["Label"] 
-
-				ca = getConversationAttributesForFlow(flow_file_name)
-				num_conv_attributes = len(conversation_attributes)
-				num_ca = len(ca)
-				conversation_attributes += ca
-				conversation_labels += [label] * num_ca
-		training_data += conversation_attributes
-		training_labels += conversation_labels
-
-	print("Processing the evaluation data")
-
-	# Creates a dictionary of labels containing each label to evaluate the knn algorithms accuracy
-	all_labels = {}
-	actual_labels = {}
-
-	for label in unique_labels:
-		actual_labels[label] = 0
-	for label_list in unique_labels:
-		all_labels[label_list] = actual_labels.copy()
-
-	# Load in the flow information for the devices in the eval set
-	for device_dir in os.listdir(eval_json_dir):
-		print("Processing the " + device_dir + " device in the training data")
-		conversation_attributes = []
-		conversation_labels = []
-		label = "Unknown"
-
-		device_dir_path = os.path.join(eval_json_dir, device_dir)
-		if os.path.isdir(device_dir_path):
-			# Get the conversation for the flow
-			for flow_file_name in os.listdir(device_dir_path):
-				print("Processing the " + flow_file_name + " flow in the training data")
-				# Get the label for the device based on the source IP on the file
-				src_ip = ""
-				flowRe = list(re.finditer(r"(?P<src_ip>\d*.\d*.\d*.\d*)-(?P<dst_ip>\d*.\d*.\d*.\d*).json", flow_file_name))
-				if len(flowRe) > 0:
-					flowElems = flowRe[0].groupdict()
-					src_ip = flowElems["src_ip"]
-
-				for iplabel in ip_labels:
-					if iplabel["IP"] == src_ip:
-						label = iplabel["Label"]
-
-				ca = getConversationAttributesForFlow(flow_file_name)
-				#print(ca)
-				num_conv_attributes = len(conversation_attributes)
-				num_ca = len(ca)
-				conversation_attributes += ca
-				conversation_labels += [label] * num_ca
-
-		print("Starting to run KNN for device " + device_dir)
-		# Run the KNN analysis per evaluation device
-		k = KNN()
-		knn_label = k.runKNN(training_data, training_labels, conversation_attributes, conversation_labels, unique_labels, experiment_dir)
-
-		# Adds accuracy of device to all_labels dictionary
-		all_labels[knn_label][label] += 1
-
-	device_report_dir = os.path.join(experiment_dir, 'device_report')
-	if not os.path.exists(device_report_dir):
-		os.makedirs(device_report_dir)
-
-	for device in unique_labels:
-		TP_numerator = 0
-		FN_numerator = 0
-		TPandFN_denominator = 0
-		FP_numerator = 0
-		TN_numerator = 0
-		FPandTN_denominator = 0
-
-		for kLabel in all_labels:
-			for uLabel in all_labels[kLabel]:
-				if uLabel == device and kLabel == device:
-					TP_numerator += all_labels[kLabel][uLabel]
-					TPandFN_denominator += all_labels[kLabel][uLabel]
-				elif uLabel != device and kLabel == device:
-					FP_numerator += all_labels[kLabel][uLabel]
-					FPandTN_denominator += all_labels[kLabel][uLabel]
-				elif uLabel == device and kLabel != device:
-					FN_numerator += all_labels[kLabel][uLabel]
-					TPandFN_denominator += all_labels[kLabel][uLabel]
-				elif uLabel != device and kLabel != device:
-					TN_numerator += all_labels[kLabel][uLabel]
-					FPandTN_denominator += all_labels[kLabel][uLabel]
-		
-		device_report = {}
-		device_report['True Positive Rate'] = str(TP_numerator) + ' / ' + str(TPandFN_denominator)
-		device_report['False Negative Rate'] = str(FN_numerator) + ' / ' + str(TPandFN_denominator)
-		device_report['False Positive Rate'] = str(FP_numerator) + ' / ' + str(FPandTN_denominator)
-		device_report['True Negative Rate'] = str(TN_numerator) + ' / ' + str(FPandTN_denominator)
-
-		device_path_name = device + '_report.json'
-		device_report_path = os.path.join(device_report_dir, device_path_name)
-		with open(device_report_path, 'w') as outfile:
-			json.dump(device_report, outfile)
+		closeAllFlowFiles(flow_json_dir)
 			
 main()
