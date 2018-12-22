@@ -29,67 +29,38 @@ def getConversationAttributesForFlow(flow_file_name):
 	flow_file_path = os.path.join(device_dir_path, flow_file_name)
 	flow_file = open(flow_file_path, "r")
 	start_reading_packets = False
-	row = 0
 	packets = []
-	packet = {}
 	flow_src_ip = ""
-	for line in flow_file.readlines():
-		if row == 2:
-			# Get source IP for flow
-			lineRe = list(re.finditer(r"\tsrc_ip: '(?P<ip>\d*.\d*.\d*.\d*)',", line))
-			if len(lineRe) > 0:
-				outputDict = lineRe[0].groupdict()
-				flow_src_ip = outputDict["ip"]
-		elif row > 5:
-			if "{" in line:
-				# Do nothing
-				pass
-			elif "\t}" in line:
-				# Add packet to list of packets for flow
-				num_packets = len(packets)
-				if num_packets > 0:
-					spot_found = False
-					# Sort the packets based on timestamp
-					for packet_index in range(num_packets):
-						current_packet = packets[packet_index]
+	flow_file_json = json.loads(flow_file.read())
 
-						if packet == {}:
-							print("WARNING: The new packet is empty for some reason")
-							continue
+	
+	for packet in flow_file_json['packets']:
+		# Sort the packets based on timestamp
+		num_packets = len(packets)
+		if num_packets > 0:
+			for packet_index in range(num_packets):
+				current_packet = packets[packet_index]
 
-						if current_packet == {}:
-							print("WARNING: The current packet is empty for some reason")
-							continue
+				if packet == {}:
+					print("WARNING: The new packet is empty for some reason")
+					continue
 
-						# Determine if the current packet time is greater than the time of the packet being placed
-						if spot_found == False and packet["Packet_Timestamp"] < current_packet["Packet_Timestamp"]:
-							after_packets = packets[packet_index:num_packets]
-							packets[packet_index] = packet
-							packets[packet_index + 1: num_packets + 1] = after_packets
-							spot_found = True
-					if spot_found == False:
-						packets.append(packet)
-				else:
-					packets.append(packet)
-							
-				packet = {}
-			else:
-				# Pull out a line from the packet and add it to the packet object
-				lineRe = list(re.finditer(r"\t\t\t(?P<key>[^ ]*): '(?P<value>.*)',", line))
-				if len(lineRe) > 0:
-					outputDict = lineRe[0].groupdict()
-					key = outputDict["key"]
-					value = outputDict["value"]
-					# Determine if the key is necessary to calculate the conversation information
-					if	key == "Packet_Timestamp" or\
-						key == "Packet_Type" or\
-						key == "Packet_Length" or\
-						key == "Ethernet_Source_MAC" or\
-						key == "Ethernet_Destination_MAC" or\
-						key == "IP_Source_Address" or\
-						key == "IP_Destination_Address":
-						packet[key] = value
-		row += 1
+				if current_packet == {}:
+					print("WARNING: The current packet is empty for some reason")
+					continue
+
+				# Determine if the current packet time is greater than the time of the packet being placed
+				if spot_found == False and packet["Packet_Timestamp"] < current_packet["Packet_Timestamp"]:
+					after_packets = packets[packet_index:num_packets]
+					packets[packet_index] = packet
+					packets[packet_index + 1: num_packets + 1] = after_packets
+					spot_found = True
+
+			# Add the packet to the end
+			if spot_found == False:
+				packets.append(packet)
+		else:
+			packets.append(packet)
 
 	# Pull out the conversations from the flow packets
 	conversation_attributes = []
