@@ -20,115 +20,118 @@ class PcapParserHelper:
 		device_file = open(path, "a")
 
 		# Get the timestamp that the packet was sent at
-		device_file.write("			Packet_Timestamp: '" + str(packet.time) + "',\n")
+		device_file.write('			"Packet_Timestamp": "' + str(packet.time) + '",\n')
 		
 		# Get the type of packet
 		#print(self.__getTypeOfPacket(packet))
 		protocol = self.__getTypeOfPacket(packet)
-		device_file.write("			Packet_Type: '" + str(protocol) + "',\n")
+		device_file.write('			"Packet_Type": "' + str(protocol) + '",\n')
 
 		# Get packet length
 		if packet.haslayer(IP):
-			device_file.write("			Packet_Length: '" + str(packet[IP].len) + "',\n")
+			device_file.write('			"Packet_Length": "' + str(packet[IP].len) + '",\n')
 		elif packet.haslayer(ARP):
-			device_file.write("			Packet_Length: '28',\n")
+			device_file.write('			"Packet_Length": "28",\n')
 		else:
-			device_file.write("			Packet_Length: 'Unknown',\n")
+			device_file.write('			"Packet_Length": "Unknown",\n')
 
 		# Get the ethernet information from the packet
 		if packet.haslayer(Ether):
-			device_file.write("			Ethernet_Source_MAC: '" + str(packet[Ether].src) +  "',\n")
-			device_file.write("			Ethernet_Destination_MAC: '" + str(packet[Ether].dst) +  "',\n")
+			device_file.write('			"Ethernet_Source_MAC": "' + str(packet[Ether].src) +  '",\n')
+			device_file.write('			"Ethernet_Destination_MAC": "' + str(packet[Ether].dst) + '",\n')
 
 			if verbose:
-				device_file.write("			Ethernet_Type_Num: '" + str(packet[Ether].type) +  "',\n")
-				device_file.write("			Ethernet_Type_Protocol: '" + self.__getEthernetTypeString(packet[Ether].type) +  "',\n")	
+				device_file.write('			"Ethernet_Type_Num": "' + str(packet[Ether].type) +  '",\n')
+				device_file.write('			"Ethernet_Type_Protocol": "' + self.__getEthernetTypeString(packet[Ether].type) +  '",\n')	
 		#Get thr ARP information from the packet
 		if packet.haslayer(ARP):
 			if verbose:
-				device_file.write("			ARP_Hardware_Type: '" + str(packet[ARP].hwtype) + "',\n")
-				device_file.write("			ARP_Protocol_Type: '" + str(packet[ARP].ptype) + "',\n")
-				device_file.write("			ARP_Hardware_Length: '" + str(packet[ARP].hwlen) + "',\n")
-				device_file.write("			ARP_Protocol_Length: '" + str(packet[ARP].plen) + "',\n")
-				device_file.write("			ARP_Sender_Hardware_Address: '" + str(packet[ARP].hwsrc) + "',\n")
-				device_file.write("			ARP_Sender_Protocol_Address: '" + str(packet[ARP].psrc) + "',\n")
-				device_file.write("			ARP_Target_Hardware_Address: '" + str(packet[ARP].hwdst) + "',\n")
-				device_file.write("			ARP_Target_Protocol_Address: '" + str(packet[ARP].pdst) + "',\n")
-				device_file.write("			ARP_OP_Code: '" + str(packet[ARP].op) + "',\n")
+				device_file.write('			"ARP_Hardware_Type": "' + str(packet[ARP].hwtype) + '",\n')
+				device_file.write('			"ARP_Protocol_Type": "' + str(packet[ARP].ptype) + '",\n')
+				device_file.write('			"ARP_Hardware_Length": "' + str(packet[ARP].hwlen) + '",\n')
+				device_file.write('			"ARP_Protocol_Length": "' + str(packet[ARP].plen) + '",\n')
+				device_file.write('			"ARP_Sender_Hardware_Address": "' + str(packet[ARP].hwsrc) + '",\n')
+				device_file.write('			"ARP_Sender_Protocol_Address": "' + str(packet[ARP].psrc) + '",\n')
+				device_file.write('			"ARP_Target_Hardware_Address": "' + str(packet[ARP].hwdst) + '",\n')
+				device_file.write('			"ARP_Target_Protocol_Address": "' + str(packet[ARP].pdst) + '",\n')
+				device_file.write('			"ARP_OP_Code": "' + str(packet[ARP].op) + '",\n')
 		# Get the IP information from the packet
 		if packet.haslayer(IP):
-			device_file.write("			IP_Source_Address: '" + str(packet[IP].src) + "',\n")
-			device_file.write("			IP_Destination_Address: '" + str(packet[IP].dst) + "',\n")
+			device_file.write('			"IP_Source_Address": "' + str(packet[IP].src) + '",\n')
+			if verbose:
+				device_file.write('			"IP_Destination_Address": "' + str(packet[IP].dst) + '",\n')
+			else:
+				device_file.write('			"IP_Destination_Address": "' + str(packet[IP].dst) + '"\n')
 			
 			if verbose:
-				device_file.write("			IP_Source_Version: '" + str(packet[IP].version) + "',\n")
-				device_file.write("			IP_Destination_Domain: '" + self.__getDomainName(packet[IP].dst) + "',\n")
-				device_file.write("			IP_Fragment_Offset: '" + str(packet[IP].frag) + "',\n")
-				device_file.write("			IP_Protocol_Num: '" + str(packet[IP].proto) + "',\n")
-				device_file.write("			IP_Protocol_String: '" + self.__getIPProtocolString(packet[IP].proto) + "',\n")
-				device_file.write("			IP_Type_Of_Service_(aka_DSCP): '" + str(packet[IP].tos) + "',\n")
-				device_file.write("			IP_Header_Checksum: '" + str(packet[IP].chksum) + "',\n")
-				device_file.write("			IP_Total_Length: '" + str(packet[IP].len) + "',\n")
-				device_file.write("			IP_Source_Options: '" + str(packet[IP].options) + "',\n")
-				device_file.write("			IP_Source_Flags: '" + str(packet[IP].flags) + "',\n")
-				device_file.write("			IP_Source_Internet_Header_Length: '" + str(packet[IP].ihl) + "',\n")
-				device_file.write("			IP_Source_Time_to_Live: '" + str(packet[IP].ttl) + "',\n")
-				device_file.write("			IP_Identification: '" + str(packet[IP].id) + "',\n")
+				device_file.write('			"IP_Source_Version": "' + str(packet[IP].version) + '",\n')
+				device_file.write('			"IP_Destination_Domain": "' + self.__getDomainName(packet[IP].dst) + '",\n')
+				device_file.write('			"IP_Fragment_Offset": "' + str(packet[IP].frag) + '",\n')
+				device_file.write('			"IP_Protocol_Num": "' + str(packet[IP].proto) + '",\n')
+				device_file.write('			"IP_Protocol_String": "' + self.__getIPProtocolString(packet[IP].proto) + '",\n')
+				device_file.write('			"IP_Type_Of_Service_(aka_DSCP)": "' + str(packet[IP].tos) + '",\n')
+				device_file.write('			"IP_Header_Checksum": "' + str(packet[IP].chksum) + '",\n')
+				device_file.write('			"IP_Total_Length": "' + str(packet[IP].len) + '",\n')
+				device_file.write('			"IP_Source_Options": "' + str(packet[IP].options) + '",\n')
+				device_file.write('			"IP_Source_Flags": "' + str(packet[IP].flags) + '",\n')
+				device_file.write('			"IP_Source_Internet_Header_Length": "' + str(packet[IP].ihl) + '",\n')
+				device_file.write('			"IP_Source_Time_to_Live": "' + str(packet[IP].ttl) + '",\n')
+				device_file.write('			"IP_Identification": "' + str(packet[IP].id) + '",\n')
 		# Get the TCP information from the packet
 		if packet.haslayer(TCP):
 			if verbose:
-				device_file.write("			TCP_Source_Port: '" + str(packet[TCP].sport) + "',\n")
-				device_file.write("			TCP_Destination_Port: '" + str(packet[TCP].dport) + "',\n")
-				device_file.write("			TCP_Sequence_Number: '" + str(packet[TCP].seq) + "',\n")
-				device_file.write("			TCP_Acknowledge_Number: '" + str(packet[TCP].ack) + "',\n")
-				device_file.write("			TCP_Data_Offset: '" + str(packet[TCP].dataofs) + "',\n")
-				device_file.write("			TCP_Reserved_Data: '" + str(packet[TCP].reserved) + "',\n")
-				device_file.write("			TCP_Control_Flags: '" + str(packet[TCP].flags) + "',\n")
-				device_file.write("			TCP_Window_Size: '" + str(packet[TCP].window) + "',\n")
-				device_file.write("			TCP_Checksum: '" + str(packet[TCP].chksum) + "',\n")
-				device_file.write("			TCP_Urgent_Pointer: '" + str(packet[TCP].urgptr) + "',\n")
-				device_file.write("			TCP_Options: '" + str(packet[TCP].options) + "',\n")
+				device_file.write('			"TCP_Source_Port": "' + str(packet[TCP].sport) + '",\n')
+				device_file.write('			"TCP_Destination_Port": "' + str(packet[TCP].dport) + '",\n')
+				device_file.write('			"TCP_Sequence_Number": "' + str(packet[TCP].seq) + '",\n')
+				device_file.write('			"TCP_Acknowledge_Number": "' + str(packet[TCP].ack) + '",\n')
+				device_file.write('			"TCP_Data_Offset": "' + str(packet[TCP].dataofs) + '",\n')
+				device_file.write('			"TCP_Reserved_Data": "' + str(packet[TCP].reserved) + '",\n')
+				device_file.write('			"TCP_Control_Flags": "' + str(packet[TCP].flags) + '",\n')
+				device_file.write('			"TCP_Window_Size": "' + str(packet[TCP].window) + '",\n')
+				device_file.write('			"TCP_Checksum": "' + str(packet[TCP].chksum) + '",\n')
+				device_file.write('			"TCP_Urgent_Pointer": "' + str(packet[TCP].urgptr) + '",\n')
+				device_file.write('			"TCP_Options": "' + str(packet[TCP].options) + '",\n')
 		# Get the UDP information from the packet
 		if packet.haslayer(UDP):
 			if verbose:
-				device_file.write("			UDP_Source_Port: '" + str(packet[UDP].sport) + "',\n")
-				device_file.write("			UDP_Destination_Port: '" + str(packet[UDP].dport) + "',\n")
-				device_file.write("			UDP_Length: '" + str(packet[UDP].len) + "',\n")
-				device_file.write("			UDP_Checksum: '" + str(packet[UDP].chksum) + "',\n")
+				device_file.write('			"UDP_Source_Port": "' + str(packet[UDP].sport) + '",\n')
+				device_file.write('			"UDP_Destination_Port": "' + str(packet[UDP].dport) + '",\n')
+				device_file.write('			"UDP_Length": "' + str(packet[UDP].len) + '",\n')
+				device_file.write('			"UDP_Checksum": "' + str(packet[UDP].chksum) + '",\n')
 		# Get the ICMP information from the packet
 		if packet.haslayer(ICMP):
 			if verbose:
-				device_file.write("			ICMP_Gateway_IP_Address: '" + str(packet[ICMP].gw) + "',\n")
-				device_file.write("			ICMP_Gateway_Domain: '" + self.__getDomainName(packet[ICMP].gw) + "',\n")
-				device_file.write("			ICMP_Code: '" + str(packet[ICMP].code) + "',\n")
-				device_file.write("			ICMP_Originate_Timestamp: '" + str(packet[ICMP].ts_ori) + "',\n")
-				device_file.write("			ICMP_Address_Mask: '" + str(packet[ICMP].addr_mask) + "',\n")
-				device_file.write("			ICMP_Sequence: '" + str(packet[ICMP].seq) + "',\n")
-				device_file.write("			ICMP_Pointer: '" + str(packet[ICMP].ptr) + "',\n")
-				device_file.write("			ICMP_Unused: '" + str(packet[ICMP].unused) + "',\n")
-				device_file.write("			ICMP_Receive_Timestamp: '" + str(packet[ICMP].ts_rx) + "',\n")
-				device_file.write("			ICMP_Checksum: '" + str(packet[ICMP].chksum) + "',\n")
-				device_file.write("			ICMP_Reserved: '" + str(packet[ICMP].reserved) + "',\n")
-				device_file.write("			ICMP_Transmit_Timestamp: '" + str(packet[ICMP].ts_tx) + "',\n")
-				device_file.write("			ICMP_Type: '" + str(packet[ICMP].type) + "',\n")
-				device_file.write("			ICMP_Identifier: '" + str(packet[ICMP].id) + "',\n")
+				device_file.write('			"ICMP_Gateway_IP_Address": "' + str(packet[ICMP].gw) + '",\n')
+				device_file.write('			"ICMP_Gateway_Domain": "' + self.__getDomainName(packet[ICMP].gw) + '",\n')
+				device_file.write('			"ICMP_Code": "' + str(packet[ICMP].code) + '",\n')
+				device_file.write('			"ICMP_Originate_Timestamp": "' + str(packet[ICMP].ts_ori) + '",\n')
+				device_file.write('			"ICMP_Address_Mask": "' + str(packet[ICMP].addr_mask) + '",\n')
+				device_file.write('			"ICMP_Sequence": "' + str(packet[ICMP].seq) + '",\n')
+				device_file.write('			"ICMP_Pointer": "' + str(packet[ICMP].ptr) + '",\n')
+				device_file.write('			"ICMP_Unused": "' + str(packet[ICMP].unused) + '",\n')
+				device_file.write('			"ICMP_Receive_Timestamp": "' + str(packet[ICMP].ts_rx) + '",\n')
+				device_file.write('			"ICMP_Checksum": "' + str(packet[ICMP].chksum) + '",\n')
+				device_file.write('			"ICMP_Reserved": "' + str(packet[ICMP].reserved) + '",\n')
+				device_file.write('			"ICMP_Transmit_Timestamp": "' + str(packet[ICMP].ts_tx) + '",\n')
+				device_file.write('			"ICMP_Type": "' + str(packet[ICMP].type) + '",\n')
+				device_file.write('			"ICMP_Identifier": "' + str(packet[ICMP].id) + '",\n')
 		# Get the DNS information from the packet
 		if packet.haslayer(DNS):
 			if verbose:
-				device_file.write("			DNS_Identifier: '" + str(packet[DNS].id) + "',\n")
-				device_file.write("			DNS_Query_Or_Response: '" + str(packet[DNS].qr) + "',\n")
-				device_file.write("			DNS_Response_Code: '" + str(packet[DNS].rcode) + "',\n")
-				device_file.write("			DNS_Op_Code: '" + str(packet[DNS].opcode) + "',\n")
-				device_file.write("			DNS_Authoritative_Answer: '" + str(packet[DNS].aa) + "',\n")
-				device_file.write("			DNS_TrunCation: '" + str(packet[DNS].tc) + "',\n")
-				device_file.write("			DNS_Recursion_Desired: '" + str(packet[DNS].rd) + "',\n")
-				device_file.write("			DNS_Recursion_Available: '" + str(packet[DNS].ra) + "',\n")
-				device_file.write("			DNS_Z_Reserved: '" + str(packet[DNS].z) + "',\n")
-				device_file.write("			DNS_Question_Count: '" + str(packet[DNS].qdcount) + "',\n") # Number of entries in the question section
-				device_file.write("			DNS_Ancount: '" + str(packet[DNS].ancount) + "',\n") # Number of resource records in the answer section
-				device_file.write("			DNS_Nscount: '" + str(packet[DNS].nscount) + "',\n") # Number of name service resource records in the authority record section
-				device_file.write("			DNS_Arcount: '" + str(packet[DNS].arcount) + "',\n") # Number of resource records in the additional record section
-				device_file.write("			DNS_Query_Data: '" + str(packet[DNS].qd) + "',\n")
+				device_file.write('			"DNS_Identifier": "' + str(packet[DNS].id) + '",\n')
+				device_file.write('			"DNS_Query_Or_Response": "' + str(packet[DNS].qr) + '",\n')
+				device_file.write('			"DNS_Response_Code": "' + str(packet[DNS].rcode) + '",\n')
+				device_file.write('			"DNS_Op_Code": "' + str(packet[DNS].opcode) + '",\n')
+				device_file.write('			"DNS_Authoritative_Answer": "' + str(packet[DNS].aa) + '",\n')
+				device_file.write('			"DNS_TrunCation": "' + str(packet[DNS].tc) + '",\n')
+				device_file.write('			"DNS_Recursion_Desired": "' + str(packet[DNS].rd) + '",\n')
+				device_file.write('			"DNS_Recursion_Available": "' + str(packet[DNS].ra) + "',\n")
+				device_file.write('			"DNS_Z_Reserved": "' + str(packet[DNS].z) + '",\n')
+				device_file.write('			"DNS_Question_Count": "' + str(packet[DNS].qdcount) + '",\n') # Number of entries in the question section
+				device_file.write('			"DNS_Ancount": "' + str(packet[DNS].ancount) + '",\n') # Number of resource records in the answer section
+				device_file.write('			"DNS_Nscount": "' + str(packet[DNS].nscount) + '",\n') # Number of name service resource records in the authority record section
+				device_file.write('			"DNS_Arcount": "' + str(packet[DNS].arcount) + '",\n') # Number of resource records in the additional record section
+				device_file.write('			"DNS_Query_Data": "' + str(packet[DNS].qd) + '"\n')
 
 		device_file.close()
 
