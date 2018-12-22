@@ -302,7 +302,7 @@ def main():
 	# Check the number of arguments
 	if len(sys.argv) != 3:
 		print('ERROR: Incorrect number of arguments provided')
-		print('python3 DeviceDetector.py <experiment_directory> <verbose>')
+		print('python3 DeviceDetector.py <experiment_directory> <display graph>')
 		exit(-1)
 
 	# Get the experiment directory
@@ -317,6 +317,10 @@ def main():
 	if not os.path.isdir(experiment_dir):
 		print('ERROR: The experiment directory provided does not exist')
 		exit(-1)
+
+	displayGraph = False
+	if sys.argv[2].lower() == "true" or sys.argv[2].lower == "t":
+		displayGraph = True
 
 	devices_identifiers = []
 	CONVERSATION_THRESHOLD = 5
