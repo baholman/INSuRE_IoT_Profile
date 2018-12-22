@@ -65,7 +65,7 @@ def getFlowFilePath(packet, flow_json_dir, device_name):
 		ip_dest = str(packet[IP].dst)
 
 	if ip_src == "" and ip_dest == "":
-		return "none"
+		return "none", True
 	
 	# Determine if device directory exists
 	device_flow_dir = os.path.join(flow_json_dir, device_name)
@@ -76,19 +76,19 @@ def getFlowFilePath(packet, flow_json_dir, device_name):
 	device_flow_path = ""
 	for filename in os.listdir(device_flow_dir):
 		if	(filename == ip_src + "-" + ip_dest + ".json"):
-			return os.path.join(device_flow_dir, filename)
+			return os.path.join(device_flow_dir, filename), False
 
 	# Make new file if a file doesn't exist for the flow
 	device_flow_path = os.path.join(device_flow_dir, ip_src + "-" + ip_dest + ".json")
 	device_flow_file = open(device_flow_path, "w")
-	device_flow_file.write("{\n")
-	device_flow_file.write("	src_ip: '" + ip_src + "',\n")
-	device_flow_file.write("	src_name: '" + device_name + "',\n")
-	device_flow_file.write("	dest_ip: '" + ip_dest + "',\n")
-	device_flow_file.write("	dest_name: '',\n")
-	device_flow_file.write("	packets: [\n")
+	device_flow_file.write('{\n')
+	device_flow_file.write('	"src_ip": "' + ip_src + '",\n')
+	device_flow_file.write('	"src_name": "' + device_name + '",\n')
+	device_flow_file.write('	"dest_ip": "' + ip_dest + '",\n')
+	device_flow_file.write('	"dest_name": "",\n')
+	device_flow_file.write('	"packets": [\n')
 	device_flow_file.close()
-	return device_flow_path
+	return device_flow_path, True
 
 def closeAllFlowFiles(flow_json_dir):
 	global files_already_closed
@@ -101,8 +101,9 @@ def closeAllFlowFiles(flow_json_dir):
 				for filename in os.listdir(device_flow_path):
 					device_flow_file_path = os.path.join(device_flow_path, filename)
 					flow_file = open(device_flow_file_path, "a")
-					flow_file.write("	]\n")
-					flow_file.write("}\n")
+					flow_file.write('\n')
+					flow_file.write('	]\n')
+					flow_file.write('}\n')
 					flow_file.close()
 			else:
 				print("Unexpected file found in " + flow_json_dir + " called " + dirname)
@@ -132,7 +133,7 @@ def download_pcap_files(pcap_file_names, pcap_dir, flow_json_dir):
 			device_flow_path = getFlowFilePath(packet, flow_json_dir, device_name)
 			if device_flow_path != "none":
 				device_flow_file = open(device_flow_path, "a")
-				device_flow_file.write("		{\n")
+				device_flow_file.write('		{\n')
 				device_flow_file.close()
 
 				# Get packet attributes
@@ -140,7 +141,7 @@ def download_pcap_files(pcap_file_names, pcap_dir, flow_json_dir):
 				#body = self.__getBody(packet, device_flow_path, verbose)
 
 				device_flow_file = open(device_flow_path, "a")
-				device_flow_file.write("		},\n")
+				device_flow_file.write('		},\n')
 				device_flow_file.close()
 
 def signal_handler(sig, frame):
@@ -220,10 +221,15 @@ def main():
 				# Get path for the file of the device that this packet is associated with
 				device_name = getDeviceFileName(packet)
 
-				device_flow_path = getFlowFilePath(packet, flow_json_dir, device_name)
+				device_flow_path, is_new_file = getFlowFilePath(packet, flow_json_dir, device_name)
 				if device_flow_path != "none":
 					device_flow_file = open(device_flow_path, "a")
-					device_flow_file.write("		{\n")
+					if is_new_file:
+						device_flow_file.write('		{\n')
+					else:
+						device_flow_file.write(',\n')
+						device_flow_file.write('		{\n')
+
 					device_flow_file.close()
 
 					# Get packet attributes
@@ -231,7 +237,9 @@ def main():
 					#body = self.__getBody(packet, device_flow_path, verbose)
 
 					device_flow_file = open(device_flow_path, "a")
-					device_flow_file.write("		},\n")
+
+					device_flow_file.write('		}')
+
 					device_flow_file.close()
 
 
