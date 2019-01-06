@@ -38,7 +38,7 @@ def getDeviceFileName(packet):
 		src_mac = str(packet[Ether].src)
 
 	if packet.haslayer(IP):
-		src_ip = str(packet[IP])
+		src_ip = str(packet[IP].src)
 
 	# Detemine if the device already exists
 	if len(device_identifiers) > 0:
@@ -153,9 +153,9 @@ def main():
 	global experiment_dir
 
 	# Check the number of arguments
-	if len(sys.argv) != 3:
+	if len(sys.argv) != 3 and len(sys.argv) != 4:
 		print('ERROR: Incorrect number of arguments provided')
-		print('python3 DeviceDetector.py <experiment_directory> <verbose>')
+		print('python3 DeviceDetector.py <experiment_directory> <verbose> <device_names_file>')
 		exit(-1)
 
 	# Get the experiment directory
@@ -169,11 +169,37 @@ def main():
 
 	if not os.path.isdir(experiment_dir):
 		print('ERROR: The experiment directory provided does not exist')
-		exit(-1)
+		return
 
+	# Get the whether the user wants verbose results
 	verbose = False
 	if sys.argv[2].lower() == "true" or sys.argv[2].lower == "t":
 		verbose = True
+
+	# Get the name of the device names file
+	if len(sys.argv) == 4:
+		device_names = sys.argv[3]
+		device_names_parent = ''
+		if ((device_names[0] != '/') or (device_names[0] != '~')):
+			device_names_parent = os.getcwd()
+		else:
+			device_names_parent = ''
+		device_names_path = os.path.join(device_names_parent, device_names)
+
+		if not os.path.isfile(device_names_path):
+			print('ERROR: The device names file provided does not exist')
+			return
+
+		device_names_file = open(device_names_path, "r")
+		device_names_json = json.loads(device_names_file.read())
+
+		for device_name in device_names_json:
+			device = device_names_json[device_name]
+			device_identifiers.append({
+				"name": device_name,
+				"Ethernet_Source_MAC": device["Source MAC Address"],
+				"IP_Source_Address": device["IP Address"]
+			})
 
 	print("Processing the PCAP files")
 
@@ -243,8 +269,13 @@ def main():
 					device_flow_file.close()
 
 
+			print("Finished processing the " + pcap_file + " PCAP file")
 
 		# Close all the flow files
 		closeAllFlowFiles(flow_json_dir)
+
+		print(device_identifiers)
+
+		print("Finished processing all files in this run")
 			
 main()
