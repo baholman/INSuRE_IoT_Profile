@@ -34,7 +34,8 @@ class KNN():
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
 		highest_score_label = self.__evalKNN(eval_pred, eval_labels, classifier, all_device_labels, packet_count, attributes_eval, exp_dir)
 		# Uncomment code to find K value graph
-		#self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels, exp_dir, display_graph)
+		if (display_graph):
+			self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels, exp_dir, display_graph)
 		return highest_score_label
 
 	def __breakFlow(self, eval_flow_attributes, trainging_flow_attributes):
