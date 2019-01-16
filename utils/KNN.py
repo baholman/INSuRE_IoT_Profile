@@ -16,6 +16,11 @@ K-Nearest Neighbor
 Implements K-Nearest Neighbor approach to machine learning
 """
 class KNN():
+	"""
+	runKNN
+
+	Runs the KNN class and determines classification
+	"""
 	def runKNN(self, attributes_training, training_labels, attributes_eval, eval_labels, all_device_labels, exp_dir, display_graph = False):
 		# Verify that some usable training attributes were found
 		if attributes_training == []:
@@ -33,7 +38,8 @@ class KNN():
 		self.__scaleFeatures(attributes_training, attributes_eval)
 		eval_pred, classifier = self.__trainAndPredict(training_labels, attributes_training, attributes_eval)
 		highest_score_label = self.__evalKNN(eval_pred, eval_labels, classifier, all_device_labels, packet_count, attributes_eval, exp_dir)
-		# Uncomment code to find K value graph
+
+		# Code to find K value graph
 		if (display_graph):
 			self.__findKValue(attributes_training, attributes_eval, training_labels, eval_labels, exp_dir, display_graph)
 		return highest_score_label

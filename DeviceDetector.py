@@ -13,6 +13,7 @@ if major_python_version != 3:
 
 import os
 from utils.PcapParserHelper import PcapParserHelper
+from utils.RNN import RNN
 from utils.KNN import KNN
 import pcapy as p
 from scapy.all import rdpcap, Ether, ARP, IP, TCP, UDP, ICMP, DNS, Raw
@@ -22,6 +23,7 @@ import sys
 import csv
 
 device_identifiers = []
+ip_labels = []
 CONVERSATION_THRESHOLD = 5
 
 def getDeviceFileName(packet):
@@ -87,7 +89,7 @@ def getFlowFilePath(packet, flow_json_dir, device_name):
 	device_flow_file.close()
 	return device_flow_path
 
-def getConversationAttributesForFlow(flow_file_name):
+def getConversationAttributesForFlow(flow_file_name, device_dir_path):
 	# Get the contents of the flow file
 	flow_file_path = os.path.join(device_dir_path, flow_file_name)
 	flow_file = open(flow_file_path, "r")
@@ -513,7 +515,7 @@ def main():
 					if iplabel["IP"] == src_ip:
 						label = iplabel["Label"] 
 
-				ca = getConversationAttributesForFlow(flow_file_name)
+				ca = getConversationAttributesForFlow(flow_file_name, device_dir_path)
 				num_conv_attributes = len(conversation_attributes)
 				num_ca = len(ca)
 				conversation_attributes += ca
@@ -555,12 +557,19 @@ def main():
 					if iplabel["IP"] == src_ip:
 						label = iplabel["Label"]
 
-				ca = getConversationAttributesForFlow(flow_file_name)
+				ca = getConversationAttributesForFlow(flow_file_name, device_dir_path)
 				#print(ca)
 				num_conv_attributes = len(conversation_attributes)
 				num_ca = len(ca)
 				conversation_attributes += ca
 				conversation_labels += [label] * num_ca
+
+		print("Starting to run RNN for device " + device_dir)
+		# Run the RNN analysis per evaluation device
+		r = RNN()
+		canLabel = r.runRNN(training_data, training_labels, conversation_attributes, experiment_dir)
+		if not canLabel:
+			print("\nDevice " + device_dir + " cannot be classified\n")
 
 		print("Starting to run KNN for device " + device_dir)
 		# Run the KNN analysis per evaluation device
